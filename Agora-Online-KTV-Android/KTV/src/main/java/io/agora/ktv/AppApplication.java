@@ -4,7 +4,8 @@ import android.util.Log;
 
 import com.agora.data.AgoraApplication;
 
-import io.agora.rtc.RtcEngine;
+import io.agora.rtc2.RtcEngine;
+
 
 public class AppApplication extends AgoraApplication {
     @Override

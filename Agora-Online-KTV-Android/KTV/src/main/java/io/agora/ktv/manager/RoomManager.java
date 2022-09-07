@@ -19,11 +19,18 @@ import com.elvishew.xlog.XLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Optional;
+
 import io.agora.ktv.bean.MemberMusicModel;
-import io.agora.rtc.Constants;
-import io.agora.rtc.IRtcEngineEventHandler;
-import io.agora.rtc.RtcEngine;
-import io.agora.rtc.RtcEngineConfig;
+import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
+import io.agora.musiccontentcenter.IMusicContentCenterEventHandler;
+import io.agora.musiccontentcenter.Music;
+import io.agora.musiccontentcenter.MusicChartInfo;
+import io.agora.musiccontentcenter.MusicContentCenterConfiguration;
+import io.agora.rtc2.Constants;
+import io.agora.rtc2.IRtcEngineEventHandler;
+import io.agora.rtc2.RtcEngine;
+import io.agora.rtc2.RtcEngineConfig;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
@@ -53,11 +60,33 @@ public final class RoomManager {
     private volatile MemberMusicModel mMusicModel;
 
     private RtcEngine mRtcEngine;
+    private IAgoraMusicContentCenter mMcc;
 
     /**
      * 唱歌人的UserId
      */
 //    private final List<String> singers = new ArrayList<>();
+    private IMusicContentCenterEventHandler mIMccEventHandler = new IMusicContentCenterEventHandler() {
+        @Override
+        public void onPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
+            mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + msg + "," + lyricUrl);
+        }
+
+        @Override
+        public void onMusicCollectionResult(String requestId, int status, int page, int pageSize, int total, Music[] list) {
+            mLogger.d("onMusicCollectionResult " + requestId + "," + status + "," + page + "," + pageSize + "," + list);
+        }
+
+        @Override
+        public void onMusicChartsResult(String requestId, int status, MusicChartInfo[] list) {
+            mLogger.d("onMusicChartsResult " + requestId + "," + status + "," + list);
+        }
+
+        @Override
+        public void onLyricResult(String requestId, String lyricUrl) {
+            mLogger.d("onLyricResult " + requestId + "," + lyricUrl);
+        }
+    };
 
     private IRtcEngineEventHandler mIRtcEngineEventHandler = new IRtcEngineEventHandler() {
 
@@ -122,7 +151,7 @@ public final class RoomManager {
                 mLoggerRTC.d(jsonMsg);
                 if (cmd == null) return;
 
-                if (cmd.equals("setLrcTime") ) {
+                if (cmd.equals("setLrcTime")) {
                     String musicId = jsonMsg.getString("lrcId");
                     if (musicId.isEmpty()) return;
                     String remoteUserId = null;
@@ -134,15 +163,15 @@ public final class RoomManager {
                     if (remoteUserId == null) return;
                     boolean shouldPlay = jsonMsg.getInt("state") == 1;
                     // 当前不在播放 || 远端更换歌曲 《==》播放远端歌曲
-                    if((mMusicModel == null && shouldPlay) ||
+                    if ((mMusicModel == null && shouldPlay) ||
                             (mMusicModel != null && !mMusicModel.getMusicId().equals(musicId) && mMusicModel.getUserId().equals(remoteUserId))
-                    && shouldPlay) {
+                                    && shouldPlay) {
                         mMusicModel = new MemberMusicModel(musicId);
                         mMusicModel.setId(musicId);
                         mMusicModel.setUserId(remoteUserId);
                         onMusicChanged(mMusicModel);
                         // 远端切歌
-                    }else if(jsonMsg.getInt("state") == 0 && mMusicModel.getUserId().equals(remoteUserId)){
+                    } else if (jsonMsg.getInt("state") == 0 && mMusicModel.getUserId().equals(remoteUserId)) {
                         onMusicEmpty();
                     }
                 } else if (cmd.equals("syncMember")) {
@@ -165,6 +194,7 @@ public final class RoomManager {
     private RoomManager(Context mContext) {
         this.mContext = mContext;
         iniRTC();
+        initMcc();
     }
 
     private void iniRTC() {
@@ -193,8 +223,35 @@ public final class RoomManager {
         }
     }
 
+    private void initMcc() {
+        String rtmAppId = mContext.getString(R.string.rtm_app_id);
+        String rtmToken = mContext.getString(R.string.rtm_token);
+        if (TextUtils.isEmpty(rtmAppId) || TextUtils.isEmpty(rtmToken)) {
+            throw new NullPointerException("please check \"strings_config.xml\"");
+        }
+
+        try {
+            getRtcEngine().loadExtensionProvider("agora_drm_loader");
+            mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
+
+            MusicContentCenterConfiguration config = new MusicContentCenterConfiguration();
+            config.appId = rtmAppId;
+            config.mccUid = 1232678;
+            config.rtmToken = rtmToken;
+            config.eventHandler = mIMccEventHandler;
+            mMcc.initialize(config);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public RtcEngine getRtcEngine() {
         return mRtcEngine;
+    }
+
+    public IAgoraMusicContentCenter getAgoraMusicContentCenter() {
+        return mMcc;
     }
 
     public static RoomManager Instance(Context mContext) {
@@ -289,9 +346,9 @@ public final class RoomManager {
         }
 
         return Completable.complete().andThen(joinRTC().doOnSuccess(uid -> {
-            Long streamId = uid & 0xffffffffL;
-            mMine.setStreamId(streamId);
-        }).ignoreElement())
+                    Long streamId = uid & 0xffffffffL;
+                    mMine.setStreamId(streamId);
+                }).ignoreElement())
                 .doOnComplete(() -> onJoinRoom());
     }
 
@@ -315,7 +372,7 @@ public final class RoomManager {
             }
 
             mLoggerRTC.i("joinRTC() called with: results = [%s]", mRoom);
-            int ret = getRtcEngine().joinChannel("", mRoom.getChannelName(), null, Integer.parseInt(mMine.getId()));
+            int ret = getRtcEngine().joinChannel(mContext.getString(R.string.token), mRoom.getChannelName(), null, Integer.parseInt(mMine.getId()));
             if (ret != Constants.ERR_OK) {
                 mLoggerRTC.e("joinRTC() called error " + ret);
                 emitter.onError(new Exception("join rtc room error " + ret));

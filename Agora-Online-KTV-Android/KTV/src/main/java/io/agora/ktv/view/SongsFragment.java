@@ -29,6 +29,7 @@ import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvFragmentSongListBinding;
 import io.agora.ktv.manager.RoomManager;
 import io.agora.ktv.widget.SpaceItemDecoration;
+import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -83,6 +84,9 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
     private void loadMusics(String searchKey) {
         onLoadMusics(ExampleData.exampleSongs);
+        IAgoraMusicContentCenter mcc = RoomManager.Instance(requireContext()).getAgoraMusicContentCenter();
+        String searchResult = mcc.searchMusic(null, 0, 10);
+        String charts = mcc.getMusicCharts();
     }
 
     private void onLoadMusics(List<MusicModel> list) {

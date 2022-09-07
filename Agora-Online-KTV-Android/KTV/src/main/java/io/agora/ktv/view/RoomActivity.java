@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.elvishew.xlog.Logger;
+import com.elvishew.xlog.XLog;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +46,8 @@ import io.agora.ktv.view.dialog.WaitingDialog;
 import io.agora.ktv.widget.LrcControlView;
 import io.agora.lrcview.LrcLoadUtils;
 import io.agora.lrcview.bean.LrcData;
-import io.agora.rtc.Constants;
+import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
+import io.agora.rtc2.Constants;
 import io.reactivex.CompletableObserver;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -57,6 +61,7 @@ import jp.wasabeef.glide.transformations.BlurTransformation;
  */
 public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> implements View.OnClickListener, OnItemClickListener<AgoraMember> {
     public static final String TAG_ROOM = "room";
+    private Logger.Builder mLogger = XLog.tag("RoomActivity");
 
     private RoomSpeakerAdapter mRoomSpeakerAdapter;
     private MusicPlayer mMusicPlayer;
@@ -311,7 +316,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         mDataBinding.lrcControlView.setLrcViewBackground(mRoom.getMVRes());
 
-        mMusicPlayer = new MusicPlayer(getApplicationContext(), RoomManager.Instance(this).getRtcEngine());
+        mMusicPlayer = new MusicPlayer(getApplicationContext(), RoomManager.Instance(this).getRtcEngine(), RoomManager.Instance(this).getAgoraMusicContentCenter());
         mMusicPlayer.registerPlayerObserver(mMusicCallback);
 
         showNotOnSeatStatus();
@@ -335,7 +340,6 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                 .subscribe(new SingleObserver<MemberMusicModel>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
-
                     }
 
                     @Override
@@ -524,11 +528,11 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
     private void onMusicEmpty() {
         User user = UserManager.Instance().getUserLiveData().getValue();
-        if(user!=null){
+        if (user != null) {
             RoomManager roomManager = RoomManager.Instance(this);
             MemberMusicModel model = roomManager.getMusicModel();
-            if(model!=null && model.getUserId()!=null && model.getUserId().equals(user.getObjectId()))
-            mMusicPlayer.sendSyncLrc(model.getMusicId(),0,0,false);
+            if (model != null && model.getUserId() != null && model.getUserId().equals(user.getObjectId()))
+                mMusicPlayer.sendSyncLrc(model.getMusicId(), 0, 0, false);
         }
         mDataBinding.lrcControlView.getLrcView().reset();
         mDataBinding.lrcControlView.onIdleStatus();
