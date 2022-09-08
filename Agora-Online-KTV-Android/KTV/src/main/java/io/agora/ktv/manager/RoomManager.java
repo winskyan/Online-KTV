@@ -117,7 +117,7 @@ public final class RoomManager {
             mLoggerRTC.i("onLeaveChannel() called with: stats = [%s]", stats);
         }
 
-        @Override
+        /*@Override
         public void onRemoteAudioStateChanged(int uid, REMOTE_AUDIO_STATE state, REMOTE_AUDIO_STATE_REASON reason, int elapsed) {
             super.onRemoteAudioStateChanged(uid, state, reason, elapsed);
             mLoggerRTC.i("onRemoteAudioStateChanged() called with: uid = [%s], state = [%s], reason = [%s], elapsed = [%s]", uid, state, reason, elapsed);
@@ -127,7 +127,7 @@ public final class RoomManager {
         public void onLocalAudioStateChanged(LOCAL_AUDIO_STREAM_STATE state, LOCAL_AUDIO_STREAM_ERROR error) {
             super.onLocalAudioStateChanged(state, error);
             mLoggerRTC.i("onLocalAudioStateChanged() called with: state = [%s], error = [%s]", state, error);
-        }
+        }*/
 
         @Override
         public void onStreamMessage(int uid, int streamId, byte[] data) {

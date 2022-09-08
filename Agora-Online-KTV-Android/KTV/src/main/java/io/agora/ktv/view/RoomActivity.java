@@ -744,7 +744,7 @@ public class RoomActivity extends BaseActivity<KtvActivityRoomBinding> implement
                         mBinding.btnMicAttRoom.setEnabled(true);
 
                         ChannelMediaOptions options = new ChannelMediaOptions();
-                        options.publishAudioTrack = !newValue;
+                        options.publishMicrophoneTrack = !newValue;
                         RoomManager.Instance(RoomActivity.this).getRtcEngine().updateChannelMediaOptions(options);
 
                         mBinding.btnMicAttRoom.setImageResource(newValue ? R.drawable.ktv_ic_mic_disable : R.drawable.ktv_ic_mic_enable);
