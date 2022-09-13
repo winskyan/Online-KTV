@@ -21,6 +21,10 @@ public class MusicModel implements Parcelable {
     private String singer;
     private String poster;
 
+    public MusicModel(){
+
+    }
+
     protected MusicModel(Parcel in) {
         objectId = in.readString();
         musicId = in.readString();

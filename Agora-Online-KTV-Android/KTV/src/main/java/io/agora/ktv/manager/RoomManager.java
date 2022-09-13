@@ -11,7 +11,9 @@ import com.agora.data.ExampleData;
 import com.agora.data.R;
 import com.agora.data.manager.UserManager;
 import com.agora.data.model.AgoraMember;
+import com.agora.data.model.AgoraMusicCharts;
 import com.agora.data.model.AgoraRoom;
+import com.agora.data.model.MusicModel;
 import com.agora.data.model.User;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
@@ -23,10 +25,12 @@ import java.util.Optional;
 
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
+import io.agora.musiccontentcenter.IAgoraMusicPlayer;
 import io.agora.musiccontentcenter.IMusicContentCenterEventHandler;
 import io.agora.musiccontentcenter.Music;
 import io.agora.musiccontentcenter.MusicChartInfo;
 import io.agora.musiccontentcenter.MusicContentCenterConfiguration;
+import io.agora.rtc2.ChannelMediaOptions;
 import io.agora.rtc2.Constants;
 import io.agora.rtc2.IRtcEngineEventHandler;
 import io.agora.rtc2.RtcEngine;
@@ -61,6 +65,7 @@ public final class RoomManager {
 
     private RtcEngine mRtcEngine;
     private IAgoraMusicContentCenter mMcc;
+    private IAgoraMusicPlayer mAgoraMusicPlayer;
 
     /**
      * 唱歌人的UserId
@@ -70,21 +75,54 @@ public final class RoomManager {
         @Override
         public void onPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
             mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + msg + "," + lyricUrl);
+            if (0 == status && percent == 100) {
+                mMainThreadDispatch.onMusicPreLoadEvent(songCode, lyricUrl);
+            }
         }
 
         @Override
         public void onMusicCollectionResult(String requestId, int status, int page, int pageSize, int total, Music[] list) {
             mLogger.d("onMusicCollectionResult " + requestId + "," + status + "," + page + "," + pageSize + "," + list);
+            if (0 == status) {
+                MusicModel[] musics = new MusicModel[list.length];
+                MusicModel music;
+                Music musicItem;
+                for (int i = 0; i < list.length; i++) {
+                    musicItem = list[i];
+                    music = new MusicModel();
+                    music.setMusicId(String.valueOf(musicItem.getSongCode()));
+                    music.setName(musicItem.getName());
+                    music.setCreatedAt(musicItem.getReleaseTime());
+                    //music.setLrc(musicItem.);
+                    music.setSinger(musicItem.getSinger());
+                    music.setPoster(musicItem.getPoster());
+                    musics[i] = music;
+                }
+                mMainThreadDispatch.onMusicCollectionResult(requestId, musics);
+            }
         }
 
         @Override
         public void onMusicChartsResult(String requestId, int status, MusicChartInfo[] list) {
             mLogger.d("onMusicChartsResult " + requestId + "," + status + "," + list);
+            if (0 == status) {
+                AgoraMusicCharts[] musicCharts = new AgoraMusicCharts[list.length];
+                AgoraMusicCharts agoraMusicCharts;
+                for (int i = 0; i < list.length; i++) {
+                    agoraMusicCharts = new AgoraMusicCharts();
+                    agoraMusicCharts.setName(list[i].name);
+                    agoraMusicCharts.setType(list[i].type);
+                    musicCharts[i] = agoraMusicCharts;
+
+                }
+                mMainThreadDispatch.onMusicChartsResult(requestId, musicCharts);
+            }
         }
 
         @Override
         public void onLyricResult(String requestId, String lyricUrl) {
             mLogger.d("onLyricResult " + requestId + "," + lyricUrl);
+            mMainThreadDispatch.onLyricResult(requestId, lyricUrl);
         }
     };
 
@@ -224,6 +262,10 @@ public final class RoomManager {
     }
 
     private void initMcc() {
+        if (null == getRtcEngine()) {
+            throw new NullPointerException("please init rtc engine first!");
+        }
+
         String rtmAppId = mContext.getString(R.string.rtm_app_id);
         String rtmToken = mContext.getString(R.string.rtm_token);
         if (TextUtils.isEmpty(rtmAppId) || TextUtils.isEmpty(rtmToken)) {
@@ -231,15 +273,17 @@ public final class RoomManager {
         }
 
         try {
-            getRtcEngine().loadExtensionProvider("agora_drm_loader");
+            int ret = getRtcEngine().loadExtensionProvider("agora_drm_loader_extension");
             mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
 
             MusicContentCenterConfiguration config = new MusicContentCenterConfiguration();
             config.appId = rtmAppId;
-            config.mccUid = 1232678;
+            config.mccUid = 333;
             config.rtmToken = rtmToken;
             config.eventHandler = mIMccEventHandler;
             mMcc.initialize(config);
+
+            mAgoraMusicPlayer = mMcc.createMusicPlayer();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -252,6 +296,10 @@ public final class RoomManager {
 
     public IAgoraMusicContentCenter getAgoraMusicContentCenter() {
         return mMcc;
+    }
+
+    public IAgoraMusicPlayer getAgoraMusicPlayer() {
+        return mAgoraMusicPlayer;
     }
 
     public static RoomManager Instance(Context mContext) {
@@ -363,6 +411,12 @@ public final class RoomManager {
             emitterJoinRTC = emitter;
             getRtcEngine().setChannelProfile(Constants.CHANNEL_PROFILE_LIVE_BROADCASTING);
             getRtcEngine().enableAudio();
+            getRtcEngine().enableAudioVolumeIndication(30, 10, true);
+            getRtcEngine().enableVideo();
+            getRtcEngine().enableLocalVideo(false);
+            getRtcEngine().setParameters("{\"rtc.audio.opensl.mode\":0}");
+            getRtcEngine().setParameters("{\"rtc.audio_fec\":[3,2]}");
+            getRtcEngine().setParameters("{\"rtc.audio_resend\":false}");
             if (ObjectsCompat.equals(mMine, owner)) {
                 getRtcEngine().setClientRole(Constants.CLIENT_ROLE_BROADCASTER);
             } else if (mMine.getRole() == AgoraMember.Role.Speaker) {
@@ -372,7 +426,10 @@ public final class RoomManager {
             }
 
             mLoggerRTC.i("joinRTC() called with: results = [%s]", mRoom);
-            int ret = getRtcEngine().joinChannel(mContext.getString(R.string.token), mRoom.getChannelName(), null, Integer.parseInt(mMine.getId()));
+
+            //int ret = getRtcEngine().joinChannel("", mRoom.getId(), null, mMine.getStreamId().intValue());
+
+            int ret = getRtcEngine().joinChannel("", mRoom.getChannelName(), null,Integer.parseInt(mMine.getId()));
             if (ret != Constants.ERR_OK) {
                 mLoggerRTC.e("joinRTC() called error " + ret);
                 emitter.onError(new Exception("join rtc room error " + ret));

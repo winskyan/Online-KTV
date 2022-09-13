@@ -1,38 +1,34 @@
 package io.agora.ktv.view;
 
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.agora.data.ExampleData;
 import com.agora.data.manager.UserManager;
+import com.agora.data.model.AgoraMusicCharts;
 import com.agora.data.model.AgoraRoom;
 import com.agora.data.model.MusicModel;
 import com.agora.data.model.User;
-import com.agora.data.provider.AgoraObject;
-import com.agora.data.provider.DataRepositroy;
-import com.agora.data.sync.AgoraException;
-import com.agora.data.sync.SyncManager;
+import com.elvishew.xlog.Logger;
+import com.elvishew.xlog.XLog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.agora.baselibrary.base.DataBindBaseFragment;
 import io.agora.baselibrary.base.OnItemClickListener;
-import io.agora.baselibrary.util.ToastUtile;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.SongsAdapter;
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvFragmentSongListBinding;
+import io.agora.ktv.manager.RoomEventCallback;
 import io.agora.ktv.manager.RoomManager;
 import io.agora.ktv.widget.SpaceItemDecoration;
 import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 
 /**
  * 歌单列表
@@ -41,6 +37,48 @@ import io.reactivex.disposables.Disposable;
  * @date 2021/6/15
  */
 public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBinding> implements OnItemClickListener<MusicModel> {
+    private final Logger.Builder mLogger = XLog.tag("SongsFragment");
+
+    private static final int MUSIC_PAGE_SIZE = 10;
+
+    private IAgoraMusicContentCenter mMcc;
+    private String mMusicChartsRequestId;
+    private String mMusicCollectionRequestId;
+    private int mMusicChartId = -1;
+    private int mCurrentPage = 0;
+
+    private final RoomEventCallback callback = new RoomEventCallback() {
+        @Override
+        public void onMusicChartsResult(String requestId, AgoraMusicCharts[] musicCharts) {
+            if (!TextUtils.isEmpty(mMusicChartsRequestId) && mMusicChartsRequestId.equals(requestId)) {
+                //加载第一个排行榜
+                if (musicCharts.length > 0) {
+                    loadMusicsByChartId(musicCharts[0].type);
+                }
+            }
+        }
+
+        @Override
+        public void onMusicCollectionResult(String requestId, MusicModel[] musics) {
+            if (!TextUtils.isEmpty(mMusicCollectionRequestId) && mMusicCollectionRequestId.equals(requestId)) {
+                if (musics.length > 0) {
+                    onLoadMusics(Arrays.asList(musics));
+                }
+            }
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        RoomManager.Instance(getContext()).addRoomEventCallback(callback);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        RoomManager.Instance(getContext()).removeRoomEventCallback(callback);
+    }
 
     public static SongsFragment newInstance() {
         SongsFragment mFragment = new SongsFragment();
@@ -79,14 +117,22 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
         mDataBinding.llEmpty.setVisibility(View.GONE);
 
+        mMcc = RoomManager.Instance(requireContext()).getAgoraMusicContentCenter();
         loadMusics(null);
     }
 
     private void loadMusics(String searchKey) {
-        onLoadMusics(ExampleData.exampleSongs);
-        IAgoraMusicContentCenter mcc = RoomManager.Instance(requireContext()).getAgoraMusicContentCenter();
-        String searchResult = mcc.searchMusic(null, 0, 10);
-        String charts = mcc.getMusicCharts();
+        //onLoadMusics(ExampleData.exampleSongs);
+        mMusicChartsRequestId = mMcc.getMusicCharts();
+
+    }
+
+    private void loadMusicsByChartId(int musicChartId) {
+        if (-1 == musicChartId) {
+            return;
+        }
+        //默认加载十首歌曲
+        mMusicCollectionRequestId = mMcc.getMusicCollectionByMusicChartId(musicChartId, mCurrentPage, MUSIC_PAGE_SIZE);
     }
 
     private void onLoadMusics(List<MusicModel> list) {

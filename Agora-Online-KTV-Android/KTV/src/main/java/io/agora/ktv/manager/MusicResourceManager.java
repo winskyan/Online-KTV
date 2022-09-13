@@ -17,6 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import io.agora.ktv.bean.MemberMusicModel;
+import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.CompletableOnSubscribe;
@@ -42,9 +43,12 @@ public final class MusicResourceManager {
 
     public static volatile boolean isPreparing = false;
 
+    private IAgoraMusicContentCenter mMcc;
+
     private MusicResourceManager(Context mContext) {
         this.mContext = mContext;
         resourceRoot = mContext.getExternalCacheDir().getPath();
+        mMcc = RoomManager.Instance(mContext).getAgoraMusicContentCenter();
     }
 
     public static MusicResourceManager Instance(Context mContext) {
@@ -112,8 +116,8 @@ public final class MusicResourceManager {
                         }
 
                         return Completable.mergeArray(
-                                DataRepositroy.Instance(mContext).download(fileMusic, musicModel.getSong()),
-                                mCompletable)
+                                        DataRepositroy.Instance(mContext).download(fileMusic, musicModel.getSong()),
+                                        mCompletable)
                                 .toSingle(new Callable<MemberMusicModel>() {
                                     @Override
                                     public MemberMusicModel call() throws Exception {
@@ -125,6 +129,40 @@ public final class MusicResourceManager {
                     isPreparing = false;
                     mLogger.e("prepareMusic error", throwable);
                 });
+    }
+
+    public Single<MemberMusicModel> loadLrc(final MemberMusicModel musicModel) {
+        File fileMusic = new File(resourceRoot, musicModel.getMusicId());
+        File fileLrc;
+
+        if (musicModel.getLrc().endsWith("zip")) {
+            fileLrc = new File(resourceRoot, musicModel.getMusicId() + ".zip");
+        } else if (musicModel.getLrc().endsWith("xml")) {
+            fileLrc = new File(resourceRoot, musicModel.getMusicId() + ".xml");
+        } else if (musicModel.getLrc().endsWith("lrc")) {
+            fileLrc = new File(resourceRoot, musicModel.getMusicId() + ".lrc");
+        } else {
+            return Single.error(new Throwable("未知歌词格式"));
+        }
+
+        musicModel.setFileMusic(fileMusic);
+        musicModel.setFileLrc(fileLrc);
+
+        mLogger.i("prepareMusic down %s", musicModel);
+        Completable mCompletable = DataRepositroy.Instance(mContext).download(fileLrc, musicModel.getLrc());
+        if (musicModel.getLrc().endsWith("zip")) {
+            mCompletable = mCompletable.andThen(Completable.create(new CompletableOnSubscribe() {
+                @Override
+                public void subscribe(@NonNull CompletableEmitter emitter) throws Exception {
+                    File fileLrcNew = new File(resourceRoot, musicModel.getMusicId() + ".xml");
+                    unzipLrc(fileLrc, fileLrcNew);
+                    musicModel.setFileLrc(fileLrcNew);
+                    emitter.onComplete();
+                }
+            }));
+        }
+
+        return mCompletable.andThen(Single.just(musicModel));
     }
 
     private void unzipLrc(File src, File des) throws Exception {
@@ -152,4 +190,5 @@ public final class MusicResourceManager {
         }
         inZip.close();
     }
+
 }

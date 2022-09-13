@@ -24,6 +24,10 @@ public abstract class DataMaybeObserver<T> implements MaybeObserver<T> {
         this.context = context;
     }
 
+    public DataMaybeObserver() {
+
+    }
+
     @Override
     public void onError(@NonNull Throwable e) {
         if (e instanceof BaseError) {

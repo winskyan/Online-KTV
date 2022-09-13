@@ -8,14 +8,18 @@ import android.os.Message;
 import androidx.annotation.NonNull;
 
 import com.agora.data.model.AgoraMember;
+import com.agora.data.model.AgoraMusicCharts;
 import com.agora.data.model.AgoraRoom;
+import com.agora.data.model.MusicModel;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.agora.ktv.bean.MemberMusicModel;
+import io.agora.musiccontentcenter.MusicChartInfo;
 
 /**
  * 主要将房间内事件切换到主线程，然后丢给界面。
@@ -35,6 +39,10 @@ public class MainThreadDispatch implements RoomEventCallback {
     private static final int ON_MUSIC_EMPTY = ON_MUSIC_CHANGED + 1;
     private static final int ON_MUSIC_PROGRESS = ON_MUSIC_EMPTY + 1;
     private static final int ON_ROOM_INFO_CHANGED = ON_MUSIC_PROGRESS + 1;
+    private static final int ON_MUSIC_CHARTS_RESULT = ON_ROOM_INFO_CHANGED + 1;
+    private static final int ON_MUSIC_COLLECTION_RESULT = ON_MUSIC_CHARTS_RESULT + 1;
+    private static final int ON_MUSIC_PRELOAD_EVENT = ON_MUSIC_COLLECTION_RESULT + 1;
+    private static final int ON_LYRIC_RESULT = ON_MUSIC_PRELOAD_EVENT + 1;
 
     private final List<RoomEventCallback> eventCallbacks = new ArrayList<>();
 
@@ -113,6 +121,34 @@ public class MainThreadDispatch implements RoomEventCallback {
             } else if (msg.what == ON_ROOM_INFO_CHANGED) {
                 for (RoomEventCallback callback : eventCallbacks) {
                     callback.onRoomInfoChanged((AgoraRoom) msg.obj);
+                }
+            } else if (msg.what == ON_MUSIC_CHARTS_RESULT) {
+                Bundle bundle = msg.getData();
+                String requestId = bundle.getString("requestId");
+                AgoraMusicCharts[] musicCharts = (AgoraMusicCharts[]) bundle.getParcelableArray("musicCharts");
+                for (RoomEventCallback callback : eventCallbacks) {
+                    callback.onMusicChartsResult(requestId, musicCharts);
+                }
+            } else if (msg.what == ON_MUSIC_COLLECTION_RESULT) {
+                Bundle bundle = msg.getData();
+                String requestId = bundle.getString("requestId");
+                MusicModel[] musics = (MusicModel[]) bundle.getParcelableArray("musics");
+                for (RoomEventCallback callback : eventCallbacks) {
+                    callback.onMusicCollectionResult(requestId, musics);
+                }
+            } else if (msg.what == ON_MUSIC_PRELOAD_EVENT) {
+                Bundle bundle = msg.getData();
+                long songCode = bundle.getLong("songCode");
+                String lyricUrl = bundle.getString("lyricUrl");
+                for (RoomEventCallback callback : eventCallbacks) {
+                    callback.onMusicPreLoadEvent(songCode, lyricUrl);
+                }
+            } else if (msg.what == ON_LYRIC_RESULT) {
+                Bundle bundle = msg.getData();
+                String requestId = bundle.getString("requestId");
+                String lyricUrl = bundle.getString("lyricUrl");
+                for (RoomEventCallback callback : eventCallbacks) {
+                    callback.onLyricResult(requestId, lyricUrl);
                 }
             }
             return false;
@@ -211,6 +247,58 @@ public class MainThreadDispatch implements RoomEventCallback {
         bundle.putLong("cur", cur);
 
         Message message = mHandler.obtainMessage(ON_MUSIC_PROGRESS);
+        message.setData(bundle);
+        message.sendToTarget();
+    }
+
+    @Override
+    public void onMusicChartsResult(String requestId, AgoraMusicCharts[] musicCharts) {
+        mLogger.d("onMusicChartsResult() called with: requestId = [%s],musicCharts=[%s]", requestId, Arrays.toString(musicCharts));
+
+        Bundle bundle = new Bundle();
+        bundle.putString("requestId", requestId);
+        bundle.putParcelableArray("musicCharts", musicCharts);
+
+        Message message = mHandler.obtainMessage(ON_MUSIC_CHARTS_RESULT);
+        message.setData(bundle);
+        message.sendToTarget();
+    }
+
+    @Override
+    public void onMusicCollectionResult(String requestId, MusicModel[] musics) {
+        mLogger.d("onMusicCollectionResult() called with: requestId = [%s],musics=[%s]", requestId, Arrays.toString(musics));
+
+        Bundle bundle = new Bundle();
+        bundle.putString("requestId", requestId);
+        bundle.putParcelableArray("musics", musics);
+
+        Message message = mHandler.obtainMessage(ON_MUSIC_COLLECTION_RESULT);
+        message.setData(bundle);
+        message.sendToTarget();
+    }
+
+    @Override
+    public void onMusicPreLoadEvent(long songCode, String lyricUrl) {
+        mLogger.d("onMusicPreLoadEvent() called with: songCode = [%s],lyricUrl=[%s]", songCode, lyricUrl);
+
+        Bundle bundle = new Bundle();
+        bundle.putLong("songCode", songCode);
+        bundle.putString("lyricUrl", lyricUrl);
+
+        Message message = mHandler.obtainMessage(ON_MUSIC_PRELOAD_EVENT);
+        message.setData(bundle);
+        message.sendToTarget();
+    }
+
+    @Override
+    public void onLyricResult(String requestId, String lyricUrl) {
+        mLogger.d("onLyricResult() called with: requestId = [%s],lyricUrl=[%s]", requestId, lyricUrl);
+
+        Bundle bundle = new Bundle();
+        bundle.putString("requestId", requestId);
+        bundle.putString("lyricUrl", lyricUrl);
+
+        Message message = mHandler.obtainMessage(ON_LYRIC_RESULT);
         message.setData(bundle);
         message.sendToTarget();
     }

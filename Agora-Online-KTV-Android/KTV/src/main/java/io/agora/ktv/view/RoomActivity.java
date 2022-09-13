@@ -4,7 +4,7 @@ import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -37,8 +37,8 @@ import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvActivityRoomBinding;
 import io.agora.ktv.manager.MusicPlayer;
 import io.agora.ktv.manager.MusicResourceManager;
+import io.agora.ktv.manager.RoomEventCallback;
 import io.agora.ktv.manager.RoomManager;
-import io.agora.ktv.manager.SimpleRoomEventCallback;
 import io.agora.ktv.view.dialog.MusicSettingDialog;
 import io.agora.ktv.view.dialog.RoomChooseSongDialog;
 import io.agora.ktv.view.dialog.RoomMVDialog;
@@ -46,7 +46,6 @@ import io.agora.ktv.view.dialog.WaitingDialog;
 import io.agora.ktv.widget.LrcControlView;
 import io.agora.lrcview.LrcLoadUtils;
 import io.agora.lrcview.bean.LrcData;
-import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 import io.agora.rtc2.Constants;
 import io.reactivex.CompletableObserver;
 import io.reactivex.SingleObserver;
@@ -83,11 +82,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicOpening() {
-
         }
 
         @Override
-        public void onMusicOpenCompleted(int duration) {
+        public void onMusicOpenCompleted(long duration) {
             mDataBinding.lrcControlView.getLrcView().setTotalDuration(duration);
         }
 
@@ -124,7 +122,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
     };
 
-    private final SimpleRoomEventCallback mRoomEventCallback = new SimpleRoomEventCallback() {
+    private final RoomEventCallback mRoomEventCallback = new RoomEventCallback() {
 
         @Override
         public void onMemberJoin(@NonNull AgoraMember member) {
@@ -143,7 +141,6 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onAudioStatusChanged(boolean isMine, @NonNull AgoraMember member) {
-            super.onAudioStatusChanged(isMine, member);
 
             AgoraMember mMine = RoomManager.Instance(RoomActivity.this).getMine();
             if (ObjectsCompat.equals(member, mMine)) {
@@ -166,6 +163,22 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         @Override
         public void onMusicEmpty() {
             emptyMusic();
+        }
+
+        @Override
+        public void onMusicPreLoadEvent(long songCode, String lyricUrl) {
+            loadLrc(songCode, lyricUrl);
+        }
+
+        @Override
+        public void onLyricResult(String requestId, String lyricUrl) {
+            if (requestId.equals(mMusicPlayer.getLrcRequestId())) {
+                try {
+                    loadLrc(Long.parseLong(mMusicPlayer.getMusicModel().getMusicId()), lyricUrl);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     };
 
@@ -316,8 +329,11 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         mDataBinding.lrcControlView.setLrcViewBackground(mRoom.getMVRes());
 
-        mMusicPlayer = new MusicPlayer(getApplicationContext(), RoomManager.Instance(this).getRtcEngine(), RoomManager.Instance(this).getAgoraMusicContentCenter());
+        mMusicPlayer = new MusicPlayer(getApplicationContext(), RoomManager.Instance(this).getRtcEngine(),
+                RoomManager.Instance(this).getAgoraMusicPlayer(),
+                RoomManager.Instance(this).getAgoraMusicContentCenter());
         mMusicPlayer.registerPlayerObserver(mMusicCallback);
+
 
         showNotOnSeatStatus();
     }
@@ -331,33 +347,53 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
     }
 
-    private void prepareMusic(final MemberMusicModel musicModel, boolean onlyLrc) {
+    private void prepareMusic(final MemberMusicModel musicModel) {
         mMusicCallback.onPrepareResource();
-        MusicResourceManager.Instance(this)
-                .prepareMusic(musicModel, onlyLrc)
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(mLifecycleProvider.bindToLifecycle())
-                .subscribe(new SingleObserver<MemberMusicModel>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                    }
+        mMusicPlayer.preloadMusic(musicModel);
+    }
 
-                    @Override
-                    public void onSuccess(@NonNull MemberMusicModel musicModel) {
-                        mMusicCallback.onResourceReady(musicModel);
+    private void loadLrc(final long songCode, final String lyricUrl) {
+        mLogger.d("loadLrc songCode=[%s], lrcUrl=[%s]", songCode, lyricUrl);
+        if (-1 == songCode || TextUtils.isEmpty(lyricUrl)) {
+            mLogger.e("loadLrc song code or lyricUrl error");
+            return;
+        }
+        final MemberMusicModel musicModel = mMusicPlayer.getMusicModel();
 
-                        if (!onlyLrc) {
-                            mMusicPlayer.open(musicModel);
-                        } else {
-                            mMusicPlayer.playByListener(musicModel);
+        if (null != musicModel && musicModel.getMusicId().equals(String.valueOf(songCode))) {
+            User user = UserManager.Instance().getUserLiveData().getValue();
+            if (user == null) {
+                return;
+            }
+
+            final boolean onlyLrc = !ObjectsCompat.equals(musicModel.getUserId(), user.getObjectId());
+            musicModel.setLrc(lyricUrl);
+            MusicResourceManager.Instance(this)
+                    .loadLrc(musicModel)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .compose(mLifecycleProvider.bindToLifecycle())
+                    .subscribe(new SingleObserver<MemberMusicModel>() {
+                        @Override
+                        public void onSubscribe(@NonNull Disposable d) {
                         }
-                    }
 
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        ToastUtile.toastShort(RoomActivity.this, R.string.ktv_lrc_load_fail);
-                    }
-                });
+                        @Override
+                        public void onSuccess(@NonNull MemberMusicModel musicModel) {
+                            mMusicCallback.onResourceReady(musicModel);
+
+                            if (!onlyLrc) {
+                                mMusicPlayer.openMusic(songCode);
+                            } else {
+                                mMusicPlayer.playByListener(musicModel);
+                            }
+                        }
+
+                        @Override
+                        public void onError(@NonNull Throwable e) {
+                            ToastUtile.toastShort(RoomActivity.this, R.string.ktv_lrc_load_fail);
+                        }
+                    });
+        }
     }
 
     @Override
@@ -392,7 +428,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
     }
 
     private void doLeave() {
+        emptyMusic();
+
         User u = UserManager.Instance().getUserLiveData().getValue();
+
         // 下线
         if (u != null) {
             mMusicPlayer.sendSyncMember(u.getObjectId(), AgoraMember.Role.Listener, u.getAvatar());
@@ -613,7 +652,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         mDataBinding.lrcControlView.onPrepareStatus();
 
-        prepareMusic(music, onlyLrc);
+        prepareMusic(music);
     }
 
     @Override

@@ -9,5 +9,5 @@
     <!-- Leave this value empty if Security keys/Token is not enabled for your project -->
     <string name="token" translatable="false"></string>
     <string name="rtm_app_id" translatable="false">695752b975654e44bea00137d084c71c</string>
-    <string name="rtm_token" translatable="false">006695752b975654e44bea00137d084c71cIAD3bvUtzmG9HDVWc4C/a+P05tWoC0d75LqBJkjdLqFrfsqkiv4AAAAAEABdcdoPlCAbYwEA6AOUIBtj</string>
+    <string name="rtm_token" translatable="false">006695752b975654e44bea00137d084c71cIAB7wz9r6XB7xWt5pSduAuGDPBh7ynduuLO0mqEO+2x/vf2G15IAAAAAEAC3vhK8gjYhYwEA6AOCNiFj</string>
 </resources>
