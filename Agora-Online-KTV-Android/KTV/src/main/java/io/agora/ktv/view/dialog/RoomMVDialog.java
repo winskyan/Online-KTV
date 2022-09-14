@@ -15,16 +15,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.agora.data.ExampleData;
 import com.agora.data.model.AgoraRoom;
-import com.agora.data.provider.AgoraObject;
-import com.agora.data.sync.AgoraException;
-import com.agora.data.sync.SyncManager;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import io.agora.baselibrary.base.DataBindBaseDialog;
 import io.agora.baselibrary.base.OnItemClickListener;
-import io.agora.baselibrary.util.ToastUtile;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.MVAdapter;
 import io.agora.ktv.databinding.KtvDialogMvBinding;

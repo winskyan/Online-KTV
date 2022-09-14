@@ -5,7 +5,7 @@ import android.widget.Toast;
 
 import androidx.annotation.StringRes;
 
-public class ToastUtile {
+public class ToastUtils {
     private static Toast mToast;
 
     public static void toastShort(Context context, String msg) {

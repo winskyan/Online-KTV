@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import io.agora.baselibrary.base.DataBindBaseActivity;
 import io.agora.baselibrary.base.DataBindBaseDialog;
 import io.agora.baselibrary.base.OnItemClickListener;
-import io.agora.baselibrary.util.ToastUtile;
+import io.agora.baselibrary.util.ToastUtils;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.RoomSpeakerAdapter;
 import io.agora.ktv.bean.MemberMusicModel;
@@ -60,10 +60,12 @@ import jp.wasabeef.glide.transformations.BlurTransformation;
  */
 public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> implements View.OnClickListener, OnItemClickListener<AgoraMember> {
     public static final String TAG_ROOM = "room";
-    private Logger.Builder mLogger = XLog.tag("RoomActivity");
+    private Logger.Builder mLogger = XLog.tag("RoomActivity-MusicPlayer");
 
     private RoomSpeakerAdapter mRoomSpeakerAdapter;
     private MusicPlayer mMusicPlayer;
+    private boolean mPlayNextMusic;
+    private MemberMusicModel mNextMusicModel;
 
     private final MusicPlayer.Callback mMusicCallback = new MusicPlayer.Callback() {
 
@@ -106,7 +108,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicStop() {
-
+            if (mPlayNextMusic && null != mNextMusicModel) {
+                mPlayNextMusic = false;
+                RoomActivity.this.onMusicChanged(mNextMusicModel);
+            }
         }
 
 
@@ -157,7 +162,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             // 先停止
             emptyMusic();
             // 再播放下一曲
-            RoomActivity.this.onMusicChanged(music);
+            mPlayNextMusic = true;
+            mNextMusicModel = music;
         }
 
         @Override
@@ -265,7 +271,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
     protected void iniData() {
         User mUser = UserManager.Instance().getUserLiveData().getValue();
         if (mUser == null) {
-            ToastUtile.toastShort(this, "please login in");
+            ToastUtils.toastShort(this, "please login in");
             finish();
             return;
         }
@@ -296,7 +302,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                     public void onError(@NonNull Throwable e) {
                         e.printStackTrace();
                         closeJoinRoomDialog();
-                        ToastUtile.toastShort(RoomActivity.this, R.string.ktv_join_error);
+                        ToastUtils.toastShort(RoomActivity.this, R.string.ktv_join_error);
                         doLeave();
                     }
                 });
@@ -390,7 +396,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
                         @Override
                         public void onError(@NonNull Throwable e) {
-                            ToastUtile.toastShort(RoomActivity.this, R.string.ktv_lrc_load_fail);
+                            ToastUtils.toastShort(RoomActivity.this, R.string.ktv_lrc_load_fail);
                         }
                     });
         }
@@ -508,10 +514,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         if (mMusicPlayer.hasAccompaniment()) {
-            mMusicPlayer.toggleOrigle();
+            mMusicPlayer.toggleOriginal();
         } else {
             mDataBinding.lrcControlView.setSwitchOriginalChecked(true);
-            ToastUtile.toastShort(this, R.string.ktv_error_cut);
+            ToastUtils.toastShort(this, R.string.ktv_error_cut);
         }
     }
 

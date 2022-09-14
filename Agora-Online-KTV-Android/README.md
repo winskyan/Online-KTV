@@ -5,8 +5,27 @@
 
 # 使用
 #### 注册Agora
-1. 前往 [Agora官网](https://console.agora.io/) 注册项目，生产appId，然后替换工程**data**中 **strings_config.xml** 中 **app_id**，如果启用了token模式，需要替换 **token**。
-2. 下载SDK，请参考 [说明](https://docs.agora.io/cn/Voice/start_call_audio_android?platform=Android#%E9%9B%86%E6%88%90-sdk)
+1. 前往 [Agora官网](https://console.agora.io/) 注册项目，生产appId
+2. 替换appId
+   在local.properties中配置对应的参数
+   例如：
+
+```mk
+ #rtc app id
+ RTC_APP_ID=xxxxxxxx
+ #rtc token
+ RTC_TOKEN=
+ #mcc app id
+ MCC_APP_ID=xxxxx
+ #mcc uid
+ MCC_UID=11111111
+ #mcc rtm token
+ MCC_RTM_TOKEN=xxxxxxx
+```
+
+   如果启用了token模式，需要替换 **token**。
+
+3. 下载SDK，请参考 [说明](https://docs.agora.io/cn/Voice/start_call_audio_android?platform=Android#%E9%9B%86%E6%88%90-sdk)
 
 
 #### 运行示例项目

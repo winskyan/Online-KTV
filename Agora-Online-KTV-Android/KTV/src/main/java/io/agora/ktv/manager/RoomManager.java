@@ -23,6 +23,8 @@ import org.json.JSONObject;
 
 import java.util.Optional;
 
+import io.agora.baselibrary.util.ToastUtils;
+import io.agora.ktv.BuildConfig;
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 import io.agora.musiccontentcenter.IAgoraMusicPlayer;
@@ -236,14 +238,9 @@ public final class RoomManager {
     }
 
     private void iniRTC() {
-        String appid = mContext.getString(R.string.app_id);
-        if (TextUtils.isEmpty(appid)) {
-            throw new NullPointerException("please check \"strings_config.xml\"");
-        }
-
         RtcEngineConfig config = new RtcEngineConfig();
         config.mContext = mContext;
-        config.mAppId = appid;
+        config.mAppId = BuildConfig.RTC_APP_ID;
         config.mEventHandler = mIRtcEngineEventHandler;
 //        config.mChannelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING;
 //        if (Config.isLeanCloud()) {
@@ -263,13 +260,8 @@ public final class RoomManager {
 
     private void initMcc() {
         if (null == getRtcEngine()) {
-            throw new NullPointerException("please init rtc engine first!");
-        }
-
-        String rtmAppId = mContext.getString(R.string.rtm_app_id);
-        String rtmToken = mContext.getString(R.string.rtm_token);
-        if (TextUtils.isEmpty(rtmAppId) || TextUtils.isEmpty(rtmToken)) {
-            throw new NullPointerException("please check \"strings_config.xml\"");
+            ToastUtils.toastLong(mContext, "please init rtc engine first!");
+            return;
         }
 
         try {
@@ -277,9 +269,9 @@ public final class RoomManager {
             mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
 
             MusicContentCenterConfiguration config = new MusicContentCenterConfiguration();
-            config.appId = rtmAppId;
-            config.mccUid = 333;
-            config.rtmToken = rtmToken;
+            config.appId = BuildConfig.MCC_APP_ID;
+            config.mccUid = BuildConfig.MCC_UID;
+            config.rtmToken = BuildConfig.MCC_RTM_TOKEN;
             config.eventHandler = mIMccEventHandler;
             mMcc.initialize(config);
 
@@ -427,9 +419,7 @@ public final class RoomManager {
 
             mLoggerRTC.i("joinRTC() called with: results = [%s]", mRoom);
 
-            //int ret = getRtcEngine().joinChannel("", mRoom.getId(), null, mMine.getStreamId().intValue());
-
-            int ret = getRtcEngine().joinChannel("", mRoom.getChannelName(), null,Integer.parseInt(mMine.getId()));
+            int ret = getRtcEngine().joinChannel(BuildConfig.RTC_TOKEN, mRoom.getChannelName(), null, Integer.parseInt(mMine.getId()));
             if (ret != Constants.ERR_OK) {
                 mLoggerRTC.e("joinRTC() called error " + ret);
                 emitter.onError(new Exception("join rtc room error " + ret));

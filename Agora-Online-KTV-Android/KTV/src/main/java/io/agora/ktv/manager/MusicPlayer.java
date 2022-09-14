@@ -96,6 +96,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
                 onMusicPause();
             } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_STOPPED == state) {
                 onMusicStop();
+            } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_PLAYBACK_COMPLETED == state) {
                 onMusicCompleted();
             } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_FAILED == state) {
                 onMusicOpenError(error.ordinal());
@@ -104,7 +105,6 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
         @Override
         public void onPositionChanged(long position_ms) {
-            mLogger.d("onPositionChanged called with: position_ms = [%s]", position_ms);
         }
 
         @Override
@@ -327,6 +327,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     public void stop() {
         mLogger.i("stop()  called");
         if (mStatus == Status.IDLE) {
+            onMusicStop();
             return;
         }
         mAgoraMusicPlayer.stop();
@@ -377,11 +378,11 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         return true;
     }
 
-    public void toggleOrigle() {
+    public void toggleOriginal() {
         if (mIsOriginalSong) {
-            selectAudioTrack(1);
+            selectAudioTrack(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_L.ordinal());
         } else {
-            selectAudioTrack(0);
+            selectAudioTrack(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_STEREO.ordinal());
         }
     }
 
@@ -394,6 +395,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     }
 
     private void startDisplayLrc() {
+        mStopDisplayLrc = false;
         mDisplayThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -599,8 +601,9 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         mLogger.i("onMusicPlaying() called");
         mStatus = Status.Started;
 
-//        if (mStopSyncLrc)
-//            startPublish();
+        if (mStopSyncLrc) {
+            startPublish();
+        }
 
         mHandler.obtainMessage(ACTION_ON_MUSIC_PLAYING).sendToTarget();
     }
@@ -614,11 +617,13 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
     private void onMusicStop() {
         mLogger.i("onMusicStop() called");
-        mStatus = Status.Stopped;
+        if (mStatus != Status.IDLE) {
+            mStatus = Status.Stopped;
 
-        stopDisplayLrc();
-        stopPublish();
-        reset();
+            stopDisplayLrc();
+            stopPublish();
+            reset();
+        }
 
         mHandler.obtainMessage(ACTION_ON_MUSIC_STOP).sendToTarget();
     }
@@ -652,6 +657,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     }
 
     public void preloadMusic(final MemberMusicModel musicModel) {
+        mLogger.i("preloadMusic call with music mode =%s", musicModel);
         try {
             mSongCode = Long.parseLong(musicModel.getMusicId());
             mMusicModel = musicModel;

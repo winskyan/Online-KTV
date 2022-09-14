@@ -9,6 +9,10 @@ if (getGradle().getStartParameter().getTaskRequests()
     apply plugin: 'com.google.gms.google-services'
 }
 
+Properties properties = new Properties()
+InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream();
+properties.load(inputStream)
+
 android {
     compileSdkVersion COMPILESDKVERSION
     buildToolsVersion BUILDTOOLSVERSION
@@ -25,6 +29,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         multiDexEnabled true
+
+        buildConfigField("String", "RTC_APP_ID", "\"${properties.getProperty("RTC_APP_ID", "")}\"")
+        buildConfigField("String", "RTC_TOKEN", "\"${properties.getProperty("RTC_TOKEN", "")}\"")
+        buildConfigField("String", "MCC_APP_ID", "\"${properties.getProperty("MCC_APP_ID", "")}\"")
+        buildConfigField("long", "MCC_UID", "${properties.getProperty("MCC_UID", "-1")}")
+        buildConfigField("String", "MCC_RTM_TOKEN", "\"${properties.getProperty("MCC_RTM_TOKEN", "")}\"")
     }
 
     resourcePrefix "ktv_"

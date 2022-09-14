@@ -1,8 +1,10 @@
 package io.agora.ktv.view;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -22,7 +24,8 @@ import java.util.List;
 
 import io.agora.baselibrary.base.DataBindBaseActivity;
 import io.agora.baselibrary.base.OnItemClickListener;
-import io.agora.baselibrary.util.ToastUtile;
+import io.agora.baselibrary.util.ToastUtils;
+import io.agora.ktv.BuildConfig;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.RoomListAdapter;
 import io.agora.ktv.databinding.KtvActivityRoomListBinding;
@@ -119,7 +122,7 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
                     @Override
                     public void onError(@NonNull Throwable e) {
                         mDataBinding.swipeRefreshLayout.setRefreshing(false);
-                        ToastUtile.toastShort(RoomListActivity.this, e.getMessage());
+                        ToastUtils.toastShort(RoomListActivity.this, e.getMessage());
                     }
 
                     @Override
@@ -162,6 +165,10 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
 
     @Override
     public void onItemClick(@NonNull AgoraRoom data, View view, int position, long id) {
+        if (!checkAppId(getApplicationContext())) {
+            return;
+        }
+
         if (!EasyPermissions.hasPermissions(this, PERMISSTION)) {
             EasyPermissions.requestPermissions(this, getString(R.string.ktv_error_permisstion),
                     TAG_PERMISSTION_REQUESTCODE, PERMISSTION);
@@ -169,7 +176,7 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
         }
 
         AgoraRoom mRoom = ExampleData.exampleRooms.get(position);
-        Intent intent = new Intent(this,RoomActivity.class);
+        Intent intent = new Intent(this, RoomActivity.class);
         intent.putExtra(RoomActivity.TAG_ROOM, mRoom);
         startActivity(intent);
     }
@@ -177,5 +184,34 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
     @Override
     public void onRefresh() {
         loadRooms();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkAppId(getApplicationContext());
+    }
+
+    private boolean checkAppId(Context context) {
+        if (TextUtils.isEmpty(BuildConfig.RTC_APP_ID)) {
+            ToastUtils.toastLong(context, "please check rtc app id in local.properties first!");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(BuildConfig.MCC_APP_ID)) {
+            ToastUtils.toastLong(context, "please check mcc app id in local.properties first!");
+            return false;
+        }
+
+        if (-1 == BuildConfig.MCC_UID) {
+            ToastUtils.toastLong(context, "please check mcc uid in local.properties first!");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(BuildConfig.MCC_RTM_TOKEN)) {
+            ToastUtils.toastLong(context, "please check mcc rtm token in local.properties first!");
+            return false;
+        }
+        return true;
     }
 }
