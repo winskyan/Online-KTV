@@ -318,11 +318,17 @@ public class LrcView extends View {
     }
 
     private void createBitmapBG(int w, int h) {
+        if (w <= 0 || h <= 0) {
+            return;
+        }
         mBitmapBG = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvasBG = new Canvas(mBitmapBG);
     }
 
     private void createBitmapFG(int w, int h) {
+        if (w <= 0 || h <= 0) {
+            return;
+        }
         mBitmapFG = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvasFG = new Canvas(mBitmapFG);
     }

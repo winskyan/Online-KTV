@@ -2,7 +2,10 @@ package io.agora.ktv.view;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,6 +24,7 @@ import java.util.List;
 
 import io.agora.baselibrary.base.DataBindBaseFragment;
 import io.agora.baselibrary.base.OnItemClickListener;
+import io.agora.baselibrary.util.KeyBoardUtils;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.SongsAdapter;
 import io.agora.ktv.bean.MemberMusicModel;
@@ -44,8 +48,6 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     private IAgoraMusicContentCenter mMcc;
     private String mMusicChartsRequestId;
     private String mMusicCollectionRequestId;
-    private int mMusicChartId = -1;
-    private int mCurrentPage = 0;
 
     private final RoomEventCallback callback = new RoomEventCallback() {
         @Override
@@ -81,8 +83,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     }
 
     public static SongsFragment newInstance() {
-        SongsFragment mFragment = new SongsFragment();
-        return mFragment;
+        return new SongsFragment();
     }
 
     private SongsAdapter mAdapter;
@@ -104,6 +105,36 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
     @Override
     public void iniListener() {
+        mDataBinding.ivClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDataBinding.etSearchKey.setText("");
+                mMusicChartsRequestId = mMcc.getMusicCharts();
+            }
+        });
+
+
+        mDataBinding.etSearchKey.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    searchMusic();
+                    // 当按了搜索之后关闭软键盘
+                    KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        mDataBinding.tvSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchMusic();
+                // 当按了搜索之后关闭软键盘
+                KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
+            }
+        });
     }
 
     @Override
@@ -122,9 +153,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     }
 
     private void loadMusics(String searchKey) {
-        //onLoadMusics(ExampleData.exampleSongs);
         mMusicChartsRequestId = mMcc.getMusicCharts();
-
     }
 
     private void loadMusicsByChartId(int musicChartId) {
@@ -132,7 +161,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
             return;
         }
         //默认加载十首歌曲
-        mMusicCollectionRequestId = mMcc.getMusicCollectionByMusicChartId(musicChartId, mCurrentPage, MUSIC_PAGE_SIZE);
+        mMusicCollectionRequestId = mMcc.getMusicCollectionByMusicChartId(musicChartId, 0, MUSIC_PAGE_SIZE);
     }
 
     private void onLoadMusics(List<MusicModel> list) {
@@ -163,7 +192,16 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
         model.setMusicId(data.getMusicId());
 
         RtcManager.Instance(requireContext()).onMusicChanged(model);
+        KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
         requireActivity().onBackPressed();
+
+    }
+
+    private void searchMusic() {
+        if (!TextUtils.isEmpty(mDataBinding.etSearchKey.getText().toString())) {
+            //默认搜索前十首歌曲
+            mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE);
+        }
     }
 
 }

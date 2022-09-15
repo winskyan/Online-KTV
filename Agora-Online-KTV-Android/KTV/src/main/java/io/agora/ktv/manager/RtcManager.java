@@ -90,7 +90,6 @@ public final class RtcManager {
                     music.setMusicId(String.valueOf(musicItem.getSongCode()));
                     music.setName(musicItem.getName());
                     music.setCreatedAt(musicItem.getReleaseTime());
-                    //music.setLrc(musicItem.);
                     music.setSinger(musicItem.getSinger());
                     music.setPoster(musicItem.getPoster());
                     musics[i] = music;

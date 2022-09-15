@@ -67,8 +67,6 @@ public class RoomChooseSongDialog extends DataBindBaseDialog<KtvDialogChooseSong
         mDataBinding.pager.addOnPageChangeListener(this);
     }
 
-    private SongsFragment mSongsFragment = SongsFragment.newInstance();
-
     @Override
     public void iniData() {
         mDataBinding.pager.setAdapter(new FragmentStatePagerAdapter(getChildFragmentManager()) {
@@ -82,13 +80,12 @@ public class RoomChooseSongDialog extends DataBindBaseDialog<KtvDialogChooseSong
             @Override
             public Fragment getItem(int position) {
 //                if (position == 0) {
-                    return mSongsFragment;
+                return SongsFragment.newInstance();
 //                } else {
 //                    return mSongOrdersFragment;
 //                }
             }
 
-            @Nullable
             @Override
             public CharSequence getPageTitle(int position) {
                 if (position == 0) {
