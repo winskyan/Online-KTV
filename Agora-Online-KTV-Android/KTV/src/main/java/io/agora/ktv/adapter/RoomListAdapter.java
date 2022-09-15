@@ -45,7 +45,7 @@ public class RoomListAdapter extends BaseRecyclerViewAdapter<AgoraRoom, RoomList
         holder.mDataBinding.view.setBackgroundResource(item.getCoverRes());
     }
 
-    class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemRoomListBinding> {
+    static class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemRoomListBinding> {
 
         public ViewHolder(View view) {
             super(view);

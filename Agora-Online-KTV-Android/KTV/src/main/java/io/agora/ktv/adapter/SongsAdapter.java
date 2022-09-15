@@ -16,7 +16,6 @@ import java.util.List;
 import io.agora.baselibrary.base.BaseRecyclerViewAdapter;
 import io.agora.ktv.R;
 import io.agora.ktv.databinding.KtvItemChooseSongListBinding;
-import io.agora.ktv.manager.RoomManager;
 
 /**
  * 歌曲列表
@@ -58,7 +57,7 @@ public class SongsAdapter extends BaseRecyclerViewAdapter<MusicModel, SongsAdapt
             holder.mDataBinding.btChooseSong.setText(R.string.ktv_room_choose_song);
     }
 
-    class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemChooseSongListBinding> {
+    static class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemChooseSongListBinding> {
 
         public ViewHolder(View view) {
             super(view);

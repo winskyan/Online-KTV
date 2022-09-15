@@ -15,9 +15,7 @@ import java.util.List;
 
 import io.agora.baselibrary.base.BaseRecyclerViewAdapter;
 import io.agora.ktv.R;
-import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvItemRoomSpeakerBinding;
-import io.agora.ktv.manager.RoomManager;
 
 /**
  * 房间说话者列表
@@ -102,7 +100,7 @@ public class RoomSpeakerAdapter extends BaseRecyclerViewAdapter<AgoraMember, Roo
         }
     }
 
-    class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemRoomSpeakerBinding> {
+    static class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemRoomSpeakerBinding> {
 
         public ViewHolder(View view) {
             super(view);

@@ -8,9 +8,6 @@ import android.os.Parcelable;
  * @date 2021/6/9
  */
 public class MusicModel implements Parcelable {
-    public static final String TABLE_NAME = "MUSIC_REPOSITORY";
-    public static final String COLUMN_NAME = "name";
-
     private String objectId;
     private String musicId;
     private String name;
@@ -21,7 +18,7 @@ public class MusicModel implements Parcelable {
     private String singer;
     private String poster;
 
-    public MusicModel(){
+    public MusicModel() {
 
     }
 

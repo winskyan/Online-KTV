@@ -2,8 +2,6 @@ package io.agora.ktv;
 
 import android.util.Log;
 
-import com.agora.data.AgoraApplication;
-
 import io.agora.rtc2.RtcEngine;
 
 

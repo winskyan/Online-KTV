@@ -11,14 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.agora.data.BaseError;
-import com.agora.data.ExampleData;
+import io.agora.baselibrary.base.BaseError;
+
+import com.agora.data.provider.ExampleData;
 import com.agora.data.manager.UserManager;
 import com.agora.data.model.AgoraRoom;
 import com.agora.data.model.User;
 import com.agora.data.observer.DataObserver;
-import com.agora.data.provider.DataRepositroy;
-import com.agora.data.sync.SyncManager;
+import com.agora.data.provider.DataRepository;
+import com.agora.data.manager.RoomManager;
 
 import java.util.List;
 
@@ -77,7 +78,7 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
 
     @Override
     protected void iniData() {
-        UserManager.Instance().setupDataRepositroy(DataRepositroy.Instance(this));
+        UserManager.Instance().setupDataRepository(DataRepository.Instance(this));
 
         showEmptyStatus();
 
@@ -104,7 +105,7 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
     }
 
     private void loadRooms() {
-        SyncManager.Instance()
+        RoomManager.Instance()
                 .getRooms()
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(mLifecycleProvider.bindToLifecycle())

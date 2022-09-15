@@ -2,19 +2,12 @@ package com.agora.data.model;
 
 import androidx.annotation.NonNull;
 
-import com.agora.data.ExampleData;
-import com.agora.data.R;
+import com.agora.data.provider.ExampleData;
 
 import java.io.Serializable;
 
 public class User implements Serializable, Cloneable {
     public static final String TABLE_NAME = "USER";
-
-    public static final String COLUMN_ID = "objectId";
-    public static final String COLUMN_NAME = "name";
-    public static final String COLUMN_AVATAR = "avatar";
-    public static final String COLUMN_CREATEDAT = "createdAt";
-
     private String objectId;
     private String name;
     private String avatar;
@@ -80,7 +73,7 @@ public class User implements Serializable, Cloneable {
             e.printStackTrace();
         }
 
-        if(temp < 0 || temp >= ExampleData.exampleAvatars.size())
+        if (temp < 0 || temp >= ExampleData.exampleAvatars.size())
             temp = 0;
         return ExampleData.exampleAvatars.get(temp);
     }

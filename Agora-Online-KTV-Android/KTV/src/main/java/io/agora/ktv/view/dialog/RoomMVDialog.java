@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import com.agora.data.ExampleData;
+import com.agora.data.provider.ExampleData;
 import com.agora.data.model.AgoraRoom;
 
 import io.agora.baselibrary.base.DataBindBaseDialog;
@@ -21,7 +21,7 @@ import io.agora.baselibrary.base.OnItemClickListener;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.MVAdapter;
 import io.agora.ktv.databinding.KtvDialogMvBinding;
-import io.agora.ktv.manager.RoomManager;
+import io.agora.ktv.manager.RtcManager;
 import io.agora.ktv.widget.SpaceItemDecoration;
 
 /**
@@ -93,7 +93,7 @@ public class RoomMVDialog extends DataBindBaseDialog<KtvDialogMvBinding> impleme
 
     @Override
     public void onItemClick(@NonNull Integer data, View view, int position, long id) {
-        AgoraRoom mRoom = RoomManager.Instance(requireContext()).getRoom();
+        AgoraRoom mRoom = RtcManager.Instance(requireContext()).getRoom();
         if (mRoom == null) {
             dismiss();
             return;

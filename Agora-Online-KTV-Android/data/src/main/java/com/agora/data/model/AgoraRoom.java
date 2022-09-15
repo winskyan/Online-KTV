@@ -3,8 +3,7 @@ package com.agora.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.agora.data.ExampleData;
-import com.agora.data.R;
+import com.agora.data.provider.ExampleData;
 
 import java.util.Date;
 import java.util.HashMap;

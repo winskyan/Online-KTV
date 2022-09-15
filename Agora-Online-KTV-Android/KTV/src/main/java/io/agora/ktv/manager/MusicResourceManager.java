@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.agora.data.model.MusicModel;
-import com.agora.data.provider.DataRepositroy;
+import com.agora.data.provider.DataRepository;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 
@@ -23,8 +23,6 @@ import io.reactivex.CompletableEmitter;
 import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 /**
@@ -48,7 +46,7 @@ public final class MusicResourceManager {
     private MusicResourceManager(Context mContext) {
         this.mContext = mContext;
         resourceRoot = mContext.getExternalCacheDir().getPath();
-        mMcc = RoomManager.Instance(mContext).getAgoraMusicContentCenter();
+        mMcc = RtcManager.Instance(mContext).getAgoraMusicContentCenter();
     }
 
     public static MusicResourceManager Instance(Context mContext) {
@@ -62,7 +60,7 @@ public final class MusicResourceManager {
     }
 
     public Single<MemberMusicModel> prepareMusic(final MemberMusicModel musicModel, boolean onlyLrc) {
-        return DataRepositroy.Instance(mContext)
+        return DataRepository.Instance(mContext)
                 .getMusic(musicModel.getMusicId())
                 .firstOrError()
                 .flatMap((Function<MusicModel, SingleSource<MemberMusicModel>>) model -> {
@@ -87,7 +85,7 @@ public final class MusicResourceManager {
 
                     mLogger.i("prepareMusic down %s", musicModel);
                     if (onlyLrc) {
-                        Completable mCompletable = DataRepositroy.Instance(mContext).download(fileLrc, musicModel.getLrc());
+                        Completable mCompletable = DataRepository.Instance(mContext).download(fileLrc, musicModel.getLrc());
                         if (model.getLrc().endsWith("zip")) {
                             mCompletable = mCompletable.andThen(Completable.create(new CompletableOnSubscribe() {
                                 @Override
@@ -102,7 +100,7 @@ public final class MusicResourceManager {
 
                         return mCompletable.andThen(Single.just(musicModel));
                     } else {
-                        Completable mCompletable = DataRepositroy.Instance(mContext).download(fileLrc, musicModel.getLrc());
+                        Completable mCompletable = DataRepository.Instance(mContext).download(fileLrc, musicModel.getLrc());
                         if (model.getLrc().endsWith("zip")) {
                             mCompletable = mCompletable.andThen(Completable.create(new CompletableOnSubscribe() {
                                 @Override
@@ -116,7 +114,7 @@ public final class MusicResourceManager {
                         }
 
                         return Completable.mergeArray(
-                                        DataRepositroy.Instance(mContext).download(fileMusic, musicModel.getSong()),
+                                        DataRepository.Instance(mContext).download(fileMusic, musicModel.getSong()),
                                         mCompletable)
                                 .toSingle(new Callable<MemberMusicModel>() {
                                     @Override
@@ -149,7 +147,7 @@ public final class MusicResourceManager {
         musicModel.setFileLrc(fileLrc);
 
         mLogger.i("prepareMusic down %s", musicModel);
-        Completable mCompletable = DataRepositroy.Instance(mContext).download(fileLrc, musicModel.getLrc());
+        Completable mCompletable = DataRepository.Instance(mContext).download(fileLrc, musicModel.getLrc());
         if (musicModel.getLrc().endsWith("zip")) {
             mCompletable = mCompletable.andThen(Completable.create(new CompletableOnSubscribe() {
                 @Override

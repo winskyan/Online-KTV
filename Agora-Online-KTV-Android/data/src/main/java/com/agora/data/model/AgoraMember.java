@@ -3,15 +3,12 @@ package com.agora.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.agora.data.sync.DocumentReference;
-import com.agora.data.sync.SyncManager;
-
-import java.util.HashMap;
+import androidx.annotation.NonNull;
 
 /**
  * 猜测是将 {@link User} 与 {@link AgoraRoom} 关联的类
  * 标识该用户所在的房间、streamId、角色
- *
+ * <p>
  * {@link #roomId User#userId} 与 {@link #userId}相同 《==》 {@link AgoraMember.Role#Owner}
  * 否则 role = {@link AgoraMember.Role#Listener}
  * 用户主动上麦 《==》role = {@link AgoraMember.Role#Speaker}
@@ -110,21 +107,6 @@ public class AgoraMember implements Parcelable {
         }
     };
 
-    public HashMap<String, Object> toHashMap() {
-        DocumentReference drRoom = SyncManager.Instance()
-                .collection(AgoraRoom.TABLE_NAME)
-                .document(roomId.getId());
-
-        HashMap<String, Object> datas = new HashMap<>();
-        datas.put(COLUMN_ROOMID, drRoom);
-        datas.put(COLUMN_STREAMID, streamId);
-        datas.put(COLUMN_USERID, userId);
-        datas.put(COLUMN_ROLE, role.value);
-        datas.put(COLUMN_ISAUDIOMUTED, isMuted);
-        datas.put(COLUMN_ISSELFAUDIOMUTED, isSelfMuted);
-        return datas;
-    }
-
     public AgoraRoom getRoomId() {
         return roomId;
     }
@@ -204,6 +186,7 @@ public class AgoraMember implements Parcelable {
         return id.hashCode();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "AgoraMember{" +

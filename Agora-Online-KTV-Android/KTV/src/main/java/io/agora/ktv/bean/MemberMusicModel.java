@@ -3,30 +3,19 @@ package io.agora.ktv.bean;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 import com.agora.data.model.AgoraRoom;
 import com.agora.data.model.MusicModel;
-import com.agora.data.sync.DocumentReference;
-import com.agora.data.sync.SyncManager;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashMap;
 
 /**
  * @author chenhengfei(Aslanchen)
  * @date 2021/6/9
  */
 public class MemberMusicModel implements Parcelable {
-    public static final String TABLE_NAME = "MUSIC_KTV";
-
-    public static final String COLUMN_NAME = "name";
-    public static final String COLUMN_SINGER = "singer";
-    public static final String COLUMN_POSTER = "poster";
-    public static final String COLUMN_USERID = "userId";
-    public static final String COLUMN_ROOMID = "roomId";
-    public static final String COLUMN_MUSICID = "musicId";
-    public static final String COLUMN_CREATE = "createdAt";
-
     public enum Type implements Serializable {
         Default, MiGu;
     }
@@ -105,21 +94,6 @@ public class MemberMusicModel implements Parcelable {
             return new MemberMusicModel[size];
         }
     };
-
-    public HashMap<String, Object> toHashMap() {
-        DocumentReference drRoom = SyncManager.Instance()
-                .collection(AgoraRoom.TABLE_NAME)
-                .document(roomId.getId());
-
-        HashMap<String, Object> datas = new HashMap<>();
-        datas.put(COLUMN_NAME, name);
-        datas.put(COLUMN_SINGER, singer);
-        datas.put(COLUMN_POSTER, poster);
-        datas.put(COLUMN_ROOMID, drRoom);
-        datas.put(COLUMN_MUSICID, musicId);
-        datas.put(COLUMN_USERID, userId);
-        return datas;
-    }
 
     public String getId() {
         return id;
@@ -236,6 +210,7 @@ public class MemberMusicModel implements Parcelable {
         return id.hashCode();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "MemberMusicModel{" +

@@ -4,7 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import com.agora.data.BaseError;
+import io.agora.baselibrary.base.BaseError;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;

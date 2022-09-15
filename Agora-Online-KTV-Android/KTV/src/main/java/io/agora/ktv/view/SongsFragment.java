@@ -26,7 +26,7 @@ import io.agora.ktv.adapter.SongsAdapter;
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvFragmentSongListBinding;
 import io.agora.ktv.manager.RoomEventCallback;
-import io.agora.ktv.manager.RoomManager;
+import io.agora.ktv.manager.RtcManager;
 import io.agora.ktv.widget.SpaceItemDecoration;
 import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 
@@ -71,13 +71,13 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     @Override
     public void onResume() {
         super.onResume();
-        RoomManager.Instance(getContext()).addRoomEventCallback(callback);
+        RtcManager.Instance(getContext()).addRoomEventCallback(callback);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        RoomManager.Instance(getContext()).removeRoomEventCallback(callback);
+        RtcManager.Instance(getContext()).removeRoomEventCallback(callback);
     }
 
     public static SongsFragment newInstance() {
@@ -117,7 +117,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
         mDataBinding.llEmpty.setVisibility(View.GONE);
 
-        mMcc = RoomManager.Instance(requireContext()).getAgoraMusicContentCenter();
+        mMcc = RtcManager.Instance(requireContext()).getAgoraMusicContentCenter();
         loadMusics(null);
     }
 
@@ -146,7 +146,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
     @Override
     public void onItemClick(@NonNull MusicModel data, View view, int position, long id) {
-        AgoraRoom mRoom = RoomManager.Instance(requireContext()).getRoom();
+        AgoraRoom mRoom = RtcManager.Instance(requireContext()).getRoom();
         if (mRoom == null) {
             return;
         }
@@ -162,7 +162,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
         model.setId(data.getMusicId());
         model.setMusicId(data.getMusicId());
 
-        RoomManager.Instance(requireContext()).onMusicChanged(model);
+        RtcManager.Instance(requireContext()).onMusicChanged(model);
         requireActivity().onBackPressed();
     }
 

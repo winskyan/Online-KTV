@@ -35,10 +35,10 @@ import io.agora.rtc2.IRtcEngineEventHandler;
 import io.agora.rtc2.RtcEngine;
 
 public class MusicPlayer extends IRtcEngineEventHandler {
-    private Logger.Builder mLogger = XLog.tag("MusicPlayer");
+    private final Logger.Builder mLogger = XLog.tag("MusicPlayer");
 
-    private Context mContext;
-    private RtcEngine mRtcEngine;
+    private final Context mContext;
+    private final RtcEngine mRtcEngine;
     private int mRole = Constants.CLIENT_ROLE_BROADCASTER;
 
     private boolean mStopSyncLrc = true;
@@ -81,7 +81,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     private String mGetLrcRequestId;
     private boolean mIsOriginalSong;
 
-    private IMediaPlayerObserver mMediaPlayerObserver = new IMediaPlayerObserver() {
+    private final IMediaPlayerObserver mMediaPlayerObserver = new IMediaPlayerObserver() {
         @Override
         public void onPlayerStateChanged(io.agora.mediaplayer.Constants.MediaPlayerState state, io.agora.mediaplayer.Constants.MediaPlayerError error) {
             mLogger.d("onPlayerStateChanged called with: state = [%s], error = [%s]", state, error);
@@ -96,7 +96,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
                 onMusicPause();
             } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_STOPPED == state) {
                 onMusicStop();
-            } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_PLAYBACK_COMPLETED == state) {
+            } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_PLAYBACK_ALL_LOOPS_COMPLETED == state) {
                 onMusicCompleted();
             } else if (io.agora.mediaplayer.Constants.MediaPlayerState.PLAYER_STATE_FAILED == state) {
                 onMusicOpenError(error.ordinal());
@@ -456,7 +456,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
                         sendSyncLrc(mMusicModel.getMusicId(), mAgoraMusicPlayer.getDuration(), mRecvedPlayPosition, mMusicModel != null);
 
                     }
-                    AgoraMember member = RoomManager.Instance(mContext).getMine();
+                    AgoraMember member = RtcManager.Instance(mContext).getMine();
                     if (member != null) {
                         sendSyncMember(member.getUserId(), member.getRole(), member.getUser().getAvatar());
                     }

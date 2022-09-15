@@ -57,7 +57,7 @@ public class MVAdapter extends BaseRecyclerViewAdapter<Integer, MVAdapter.ViewHo
                 .into(holder.mDataBinding.iv);
     }
 
-    class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemMvBinding> {
+    static class ViewHolder extends BaseRecyclerViewAdapter.BaseViewHolder<KtvItemMvBinding> {
 
         public ViewHolder(View view) {
             super(view);

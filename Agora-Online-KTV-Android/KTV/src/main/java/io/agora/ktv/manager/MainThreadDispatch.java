@@ -25,7 +25,7 @@ import io.agora.musiccontentcenter.MusicChartInfo;
  * 主要将房间内事件切换到主线程，然后丢给界面。
  */
 public class MainThreadDispatch implements RoomEventCallback {
-    private Logger.Builder mLogger = XLog.tag("MainThreadDispatch");
+    private final Logger.Builder mLogger = XLog.tag("MainThreadDispatch");
 
     private static final int ON_MEMBER_JOIN = 1;
     private static final int ON_MEMBER_LEAVE = ON_MEMBER_JOIN + 1;
