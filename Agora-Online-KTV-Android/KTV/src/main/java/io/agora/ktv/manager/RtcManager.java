@@ -32,6 +32,7 @@ import io.agora.rtc2.Constants;
 import io.agora.rtc2.IRtcEngineEventHandler;
 import io.agora.rtc2.RtcEngine;
 import io.agora.rtc2.RtcEngineConfig;
+import io.agora.rtm.RtmTokenBuilder;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
@@ -256,10 +257,15 @@ public final class RtcManager {
             int ret = getRtcEngine().loadExtensionProvider("agora_drm_loader_extension");
             mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
 
+            //just for test
+            //每次初始化生成rtm token，防止token过期
+            RtmTokenBuilder token = new RtmTokenBuilder();
+            String rtmToken = token.buildToken(BuildConfig.MCC_APP_ID, BuildConfig.MCC_CERTIFICATE, String.valueOf(BuildConfig.MCC_UID), RtmTokenBuilder.Role.Rtm_User, 0);
+
             MusicContentCenterConfiguration config = new MusicContentCenterConfiguration();
             config.appId = BuildConfig.MCC_APP_ID;
             config.mccUid = BuildConfig.MCC_UID;
-            config.rtmToken = BuildConfig.MCC_RTM_TOKEN;
+            config.rtmToken = rtmToken;
             config.eventHandler = mIMccEventHandler;
             mMcc.initialize(config);
 

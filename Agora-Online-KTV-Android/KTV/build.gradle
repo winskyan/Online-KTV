@@ -24,7 +24,7 @@ android {
         minSdkVersion MINSDKVERSION
         targetSdkVersion TARGETSDKVERSION
         versionCode 9
-        versionName "2.0.0"
+        versionName "2.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -34,7 +34,7 @@ android {
         buildConfigField("String", "RTC_TOKEN", "\"${properties.getProperty("RTC_TOKEN", "")}\"")
         buildConfigField("String", "MCC_APP_ID", "\"${properties.getProperty("MCC_APP_ID", "")}\"")
         buildConfigField("long", "MCC_UID", "${properties.getProperty("MCC_UID", "-1")}")
-        buildConfigField("String", "MCC_RTM_TOKEN", "\"${properties.getProperty("MCC_RTM_TOKEN", "")}\"")
+        buildConfigField("String", "MCC_CERTIFICATE", "\"${properties.getProperty("MCC_CERTIFICATE", "")}\"")
     }
 
     resourcePrefix "ktv_"
@@ -90,5 +90,6 @@ dependencies {
     //implementation 'io.agora.rtc:full-sdk:3.5.1'
 
     implementation project(':data')
+    implementation project(':AgoraDynamicKey')
     implementation project(':lrcview')
 }

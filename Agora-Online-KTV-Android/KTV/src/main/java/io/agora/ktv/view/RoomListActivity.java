@@ -209,8 +209,8 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
             return false;
         }
 
-        if (TextUtils.isEmpty(BuildConfig.MCC_RTM_TOKEN)) {
-            ToastUtils.toastLong(context, "please check mcc rtm token in local.properties first!");
+        if (TextUtils.isEmpty(BuildConfig.MCC_CERTIFICATE)) {
+            ToastUtils.toastLong(context, "please check mcc certificate in local.properties first!");
             return false;
         }
         return true;

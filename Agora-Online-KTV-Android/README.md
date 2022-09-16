@@ -11,21 +11,23 @@
    例如：
 
 ```mk
- #rtc app id
- RTC_APP_ID=xxxxxxxx
- #rtc token
- RTC_TOKEN=
- #mcc app id
- MCC_APP_ID=xxxxx
- #mcc uid
- MCC_UID=xxxxx
- #mcc rtm token
- MCC_RTM_TOKEN=xxxxxxx
+#rtc app id
+RTC_APP_ID=xxxxxxxx
+#rtc token
+RTC_TOKEN=
+#mcc app id
+MCC_APP_ID=xxxxx
+#mcc uid
+MCC_UID=xxxxx
+#mcc certificate
+MCC_CERTIFICATE=xxxxx
 ```
-   如果启用了token模式，需要配置 **RTC_TOKEN**值。
+   如果启用了token模式，需要配置 **RTC_TOKEN**值;
+
+   **MCC_CERTIFICATE**值仅仅为了动态生成RTM TOKEN使用;
 
 
-3. 下载SDK，请参考 [说明](https://docs.agora.io/cn/Voice/start_call_audio_android?platform=Android#%E9%9B%86%E6%88%90-sdk)
+3. 下载SDK，请参考 [说明](https://docs.agora.io/cn/online-ktv/downloads?platform=Android)
 
 
 ## 运行示例项目
