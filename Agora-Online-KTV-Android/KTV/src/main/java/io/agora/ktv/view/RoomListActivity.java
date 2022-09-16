@@ -208,23 +208,13 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
     }
 
     private boolean checkAppId(Context context) {
-        if (TextUtils.isEmpty(BuildConfig.RTC_APP_ID)) {
-            ToastUtils.toastLong(context, "please check rtc app id in local.properties first!");
+        if (TextUtils.isEmpty(BuildConfig.APP_ID)) {
+            ToastUtils.toastLong(context, "please check app id in local.properties first!");
             return false;
         }
 
-        if (TextUtils.isEmpty(BuildConfig.MCC_APP_ID)) {
-            ToastUtils.toastLong(context, "please check mcc app id in local.properties first!");
-            return false;
-        }
-
-        if (-1 == BuildConfig.MCC_UID) {
-            ToastUtils.toastLong(context, "please check mcc uid in local.properties first!");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(BuildConfig.MCC_CERTIFICATE)) {
-            ToastUtils.toastLong(context, "please check mcc certificate in local.properties first!");
+        if (TextUtils.isEmpty(BuildConfig.APP_CERTIFICATE)) {
+            ToastUtils.toastLong(context, "please check app certificate in local.properties first!");
             return false;
         }
         return true;

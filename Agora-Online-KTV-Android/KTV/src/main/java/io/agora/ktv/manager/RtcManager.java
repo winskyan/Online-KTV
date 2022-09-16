@@ -235,7 +235,7 @@ public final class RtcManager {
     private void iniRTC() {
         RtcEngineConfig config = new RtcEngineConfig();
         config.mContext = mContext;
-        config.mAppId = BuildConfig.RTC_APP_ID;
+        config.mAppId = BuildConfig.APP_ID;
         config.mEventHandler = mIRtcEngineEventHandler;
 
         try {
@@ -258,13 +258,16 @@ public final class RtcManager {
             mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
 
             //just for test
+            //动态生成mcc uid
+            long mccUid = (long) (Math.random() * 90000 + 10000);
+
             //每次初始化生成rtm token，防止token过期
             RtmTokenBuilder token = new RtmTokenBuilder();
-            String rtmToken = token.buildToken(BuildConfig.MCC_APP_ID, BuildConfig.MCC_CERTIFICATE, String.valueOf(BuildConfig.MCC_UID), RtmTokenBuilder.Role.Rtm_User, 0);
+            String rtmToken = token.buildToken(BuildConfig.APP_ID, BuildConfig.APP_CERTIFICATE, String.valueOf(mccUid), RtmTokenBuilder.Role.Rtm_User, 0);
 
             MusicContentCenterConfiguration config = new MusicContentCenterConfiguration();
-            config.appId = BuildConfig.MCC_APP_ID;
-            config.mccUid = BuildConfig.MCC_UID;
+            config.appId = BuildConfig.APP_ID;
+            config.mccUid = mccUid;
             config.rtmToken = rtmToken;
             config.eventHandler = mIMccEventHandler;
             mMcc.initialize(config);
