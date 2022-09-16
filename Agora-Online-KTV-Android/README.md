@@ -5,10 +5,10 @@
 
 # 使用
 ## 注册Agora
-1. 前往 [Agora官网](https://console.agora.io/) 注册项目，生产appId，请参考[开始使用 Agora 平台](https://docs.agora.io/cn/Agora%20Platform/get_appid_token?platform=All%20Platforms)
-2. 替换appId相关参数
-   在local.properties中配置对应的参数
-   例如：
+### 1. 注册AppId
+   前往 [Agora官网](https://console.agora.io/) 注册项目，生产appId，请参考[开始使用 Agora 平台](https://docs.agora.io/cn/Agora%20Platform/get_appid_token?platform=All%20Platforms)
+### 2. 替换appId相关参数
+   在local.properties中配置对应的参数：
 
 ```mk
 #rtc app id
@@ -22,12 +22,20 @@ MCC_UID=xxxxx
 #mcc certificate
 MCC_CERTIFICATE=xxxxx
 ```
-   如果启用了token模式，需要配置 **RTC_TOKEN**值;
+注：
 
-   **MCC_CERTIFICATE**值仅仅为了动态生成RTM TOKEN使用;
+（1）如果启用了token模式，需要配置RTC_TOKEN值;
+
+（2）MCC（MusicContentCenter音乐内容中心）AppId可与RTC_APP_ID配置相同或者不同;
+
+（3）MCC_UID表示当前使用音乐内容中心用户的 uid;
+
+（4）MCC_CERTIFICATE值仅仅为了动态生成RTM TOKEN使用;
 
 
-3. 下载SDK，请参考 [说明](https://docs.agora.io/cn/online-ktv/downloads?platform=Android)
+### 3. 下载SDK
+   请参考 [说明](https://docs.agora.io/cn/online-ktv/downloads?platform=Android)
+
 
 
 ## 运行示例项目
