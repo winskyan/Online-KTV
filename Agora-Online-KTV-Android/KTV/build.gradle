@@ -71,7 +71,7 @@ android {
     if (isModule.toBoolean()) {
         applicationVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "KTV-${versionName}-${variant.buildType.name}-local.apk"
+                outputFileName = "KTV-${versionName}-${variant.buildType.name}-local-${releaseTime()}.apk"
             }
         }
     }
@@ -92,4 +92,8 @@ dependencies {
     implementation project(':data')
     implementation project(':AgoraDynamicKey')
     implementation project(':lrcview')
+}
+
+def releaseTime() {
+    return new Date().format("yyyyMMddHHmmss", TimeZone.getTimeZone("UTC"))
 }

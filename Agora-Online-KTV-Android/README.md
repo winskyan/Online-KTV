@@ -26,9 +26,9 @@ MCC_CERTIFICATE=xxxxx
 
 （1）如果启用了token模式，需要配置RTC_TOKEN值;
 
-（2）MCC（MusicContentCenter音乐内容中心）AppId可与RTC_APP_ID配置相同或者不同;
+（2）MCC_APP_ID指具有MCC（MusicContentCenter音乐内容中心）能力的AppId，MCC_APP_ID可与RTC_APP_ID配置相同或者不同;
 
-（3）MCC_UID表示当前使用音乐内容中心用户的 uid;
+（3）MCC_UID表示当前使用MCC用户的 uid;
 
 （4）MCC_CERTIFICATE值仅仅为了动态生成RTM TOKEN使用;
 

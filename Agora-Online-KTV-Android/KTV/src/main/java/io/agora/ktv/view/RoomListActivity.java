@@ -52,6 +52,8 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
 
     private RoomListAdapter mAdapter;
 
+    private AgoraRoom mJoinRoom;
+
     @Override
     protected void iniBundle(@NonNull Bundle bundle) {
 
@@ -156,12 +158,14 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
 
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-
+        if (null != mJoinRoom) {
+            joinRoom(mJoinRoom);
+        }
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-
+        ToastUtils.toastLong(getApplicationContext(), "you have denied permissions request");
     }
 
     @Override
@@ -170,16 +174,26 @@ public class RoomListActivity extends DataBindBaseActivity<KtvActivityRoomListBi
             return;
         }
 
+        mJoinRoom = ExampleData.exampleRooms.get(position);
         if (!EasyPermissions.hasPermissions(this, PERMISSTION)) {
             EasyPermissions.requestPermissions(this, getString(R.string.ktv_error_permisstion),
                     TAG_PERMISSTION_REQUESTCODE, PERMISSTION);
             return;
         }
 
-        AgoraRoom mRoom = ExampleData.exampleRooms.get(position);
+        joinRoom(mJoinRoom);
+    }
+
+    private void joinRoom(AgoraRoom room) {
         Intent intent = new Intent(this, RoomActivity.class);
-        intent.putExtra(RoomActivity.TAG_ROOM, mRoom);
+        intent.putExtra(RoomActivity.TAG_ROOM, room);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mJoinRoom = null;
     }
 
     @Override
