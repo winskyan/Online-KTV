@@ -40,10 +40,13 @@ public class LrcView extends View {
     private final TextPaint mPaintFG = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint mPaintBG = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private int mNormalTextColor;
+    private int mPastTextColor;
+    private int mFutureTextColor;
     private float mNormalTextSize;
     private int mCurrentTextColor;
     private float mCurrentTextSize;
     private float mDividerHeight;
+    private float mMarginTop;
     private String mDefaultLabel;
     private int mCurrentLine = 0;
     /**
@@ -113,12 +116,16 @@ public class LrcView extends View {
         }
 
         mDividerHeight = ta.getDimension(R.styleable.LrcView_lrcDividerHeight, getResources().getDimension(R.dimen.lrc_divider_height));
+        mMarginTop = ta.getDimension(R.styleable.LrcView_lrcMarginTop, getResources().getDimension(R.dimen.lrc_margin_top));
         mNormalTextColor = ta.getColor(R.styleable.LrcView_lrcNormalTextColor, getResources().getColor(R.color.lrc_normal_text_color));
+        mPastTextColor = ta.getColor(R.styleable.LrcView_lrcPastTextColor, getResources().getColor(R.color.lrc_normal_text_color));
+        mFutureTextColor = ta.getColor(R.styleable.LrcView_lrcFutureTextColor, getResources().getColor(R.color.lrc_normal_text_color));
         mCurrentTextColor = ta.getColor(R.styleable.LrcView_lrcCurrentTextColor, getResources().getColor(R.color.lrc_current_text_color));
         mDefaultLabel = ta.getString(R.styleable.LrcView_lrcLabel);
         mDefaultLabel = TextUtils.isEmpty(mDefaultLabel) ? getContext().getString(R.string.lrc_label) : mDefaultLabel;
         int lrcTextGravity = ta.getInteger(R.styleable.LrcView_lrcTextGravity, 0);
-        mTextGravity = io.agora.lrcview.LrcEntry.Gravity.parse(lrcTextGravity);
+        mTextGravity = LrcEntry.Gravity.parse(lrcTextGravity);
+        enableDrag = ta.getBoolean(R.styleable.LrcView_lrcEnableDrag,true);
 
         ta.recycle();
 
@@ -282,25 +289,26 @@ public class LrcView extends View {
         if (changed) {
             int w = right - left - getPaddingStart() - getPaddingEnd();
             int h = bottom - top - getPaddingTop() - getPaddingBottom();
+            if(h > 0){
+                if (mBitmapFG == null) {
+                    createBitmapFG(w, h);
+                } else if (mBitmapFG.getWidth() != w || mBitmapFG.getHeight() != h) {
+                    if (!mBitmapFG.isRecycled()) {
+                        mBitmapFG.recycle();
+                    }
 
-            if (mBitmapFG == null) {
-                createBitmapFG(w, h);
-            } else if (mBitmapFG.getWidth() != w || mBitmapFG.getHeight() != h) {
-                if (!mBitmapFG.isRecycled()) {
-                    mBitmapFG.recycle();
+                    createBitmapFG(w, h);
                 }
 
-                createBitmapFG(w, h);
-            }
+                if (mBitmapBG == null) {
+                    createBitmapBG(w, h);
+                } else if (mBitmapBG.getWidth() != w || mBitmapBG.getHeight() != h) {
+                    if (!mBitmapBG.isRecycled()) {
+                        mBitmapBG.recycle();
+                    }
 
-            if (mBitmapBG == null) {
-                createBitmapBG(w, h);
-            } else if (mBitmapBG.getWidth() != w || mBitmapBG.getHeight() != h) {
-                if (!mBitmapBG.isRecycled()) {
-                    mBitmapBG.recycle();
+                    createBitmapBG(w, h);
                 }
-
-                createBitmapBG(w, h);
             }
 
             mRectSrc.left = 0;
@@ -318,17 +326,11 @@ public class LrcView extends View {
     }
 
     private void createBitmapBG(int w, int h) {
-        if (w <= 0 || h <= 0) {
-            return;
-        }
         mBitmapBG = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvasBG = new Canvas(mBitmapBG);
     }
 
     private void createBitmapFG(int w, int h) {
-        if (w <= 0 || h <= 0) {
-            return;
-        }
         mBitmapFG = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvasFG = new Canvas(mBitmapFG);
     }
@@ -343,6 +345,9 @@ public class LrcView extends View {
         if (!hasLrc()) {
             int width = getLrcWidth();
             int height = getLrcHeight();
+            if(width == 0 || height ==0){
+                return;
+            }
             @SuppressLint("DrawAllocation")
             StaticLayout staticLayout = new StaticLayout(
                     mDefaultLabel,
@@ -361,7 +366,7 @@ public class LrcView extends View {
             return;
         }
 
-        float centerY = getLrcHeight() / 2F + getPaddingTop();
+        float centerY = getLrcHeight() / 2F + getPaddingTop() + mMarginTop;
         if (isInDrag) {
             //拖动状态下
             mBitmapBG.eraseColor(0);
@@ -374,7 +379,11 @@ public class LrcView extends View {
             for (int i = 0; i < lrcData.entrys.size(); i++) {
                 if (i == mCurrentLine) {
                     mPaintBG.setTextSize(mCurrentTextSize);
+                } else if(i < mCurrentLine) {
+                    mPaintBG.setColor(mPastTextColor);
+                    mPaintBG.setTextSize(mNormalTextSize);
                 } else {
+                    mPaintBG.setColor(mFutureTextColor);
                     mPaintBG.setTextSize(mNormalTextSize);
                 }
 
@@ -442,7 +451,9 @@ public class LrcView extends View {
                 curLrcEntry = new LrcEntry(cur, mPaintFG, mPaintBG, getLrcWidth(), mTextGravity);
 
                 // clear bitmap
-                mBitmapBG.eraseColor(0);
+                if(mBitmapBG != null){
+                    mBitmapBG.eraseColor(0);
+                }
 
                 if (mCurrentLine < 0 || mCurrentLine >= lrcData.entrys.size()) {
                     mNewLine = false;
@@ -468,11 +479,12 @@ public class LrcView extends View {
             return;
         }
 
-        float curPointY = (getLrcHeight() - curLrcEntry.getHeight()) / 2F;
+        float curPointY = (getLrcHeight() - curLrcEntry.getHeight()) / 2F + mMarginTop;
         float y;
         LrcEntryData line;
         LrcEntry mLrcEntry;
         mPaintBG.setTextSize(mNormalTextSize);
+        mPaintBG.setColor(mPastTextColor);
 
         mCanvasBG.save();
         mCanvasBG.translate(0, curPointY);
@@ -499,7 +511,7 @@ public class LrcView extends View {
             return;
         }
 
-        float y = (getLrcHeight() - curLrcEntry.getHeight()) / 2F;
+        float y = (getLrcHeight() - curLrcEntry.getHeight()) / 2F + mMarginTop;
         mCanvasBG.save();
         mCanvasBG.translate(0, y);
         curLrcEntry.draw(mCanvasBG);
@@ -513,11 +525,12 @@ public class LrcView extends View {
             return;
         }
 
-        float curPointY = (getLrcHeight() + curLrcEntry.getHeight()) / 2F + mDividerHeight;
+        float curPointY = (getLrcHeight() + curLrcEntry.getHeight()) / 2F + mDividerHeight + mMarginTop;
         float y;
         LrcEntryData data;
         LrcEntry mLrcEntry;
         mPaintBG.setTextSize(mNormalTextSize);
+        mPaintBG.setColor(mFutureTextColor);
 
         mCanvasBG.save();
         mCanvasBG.translate(0, curPointY);
@@ -545,7 +558,7 @@ public class LrcView extends View {
         mBitmapFG.eraseColor(0);
 
         Rect[] drawRects = curLrcEntry.getDrawRectByTime(mCurrentTime);
-        float y = (getLrcHeight() - curLrcEntry.getHeight()) / 2F;
+        float y = (getLrcHeight() - curLrcEntry.getHeight()) / 2F + mMarginTop;
 
         for (Rect dr : drawRects) {
             if (dr.left == dr.right)
@@ -619,11 +632,11 @@ public class LrcView extends View {
     }
 
     private int getLrcWidth() {
-        return getWidth() - getPaddingStart() - getPaddingEnd();
+        return Math.max(getWidth() - getPaddingStart() - getPaddingEnd(), 0);
     }
 
     private int getLrcHeight() {
-        return getHeight() - getPaddingTop() - getPaddingBottom();
+        return Math.max((getHeight() - getPaddingTop() - getPaddingBottom()), 0);
     }
 
     @MainThread

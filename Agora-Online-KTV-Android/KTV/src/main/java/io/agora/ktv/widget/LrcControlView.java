@@ -140,7 +140,8 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
 
     public void setMusic(@NonNull MemberMusicModel mMusic) {
         mDataBinding.ilActive.lrcView.reset();
-        mDataBinding.ilActive.pitchView.reset();
+        //mDataBinding.ilActive.pitchView.reset();
+        mDataBinding.ilActive.pitchView.setLrcData(null);
 
         this.mMusic = mMusic;
         mDataBinding.tvMusicName.setText(this.mMusic.getName());

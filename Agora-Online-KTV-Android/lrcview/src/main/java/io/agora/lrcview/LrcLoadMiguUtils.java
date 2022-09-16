@@ -1,5 +1,6 @@
 package io.agora.lrcview;
 
+import android.text.TextUtils;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -55,7 +56,7 @@ class LrcLoadMiguUtils {
             parser.setInput(in, null);
             parser.nextTag();
             Song mSong = readLrc(parser);
-            if (mSong.midi == null || mSong.midi.paragraphs == null) {
+            if (mSong == null || mSong.midi == null || mSong.midi.paragraphs == null) {
                 return null;
             }
 
@@ -75,8 +76,7 @@ class LrcLoadMiguUtils {
 
     private static Song readLrc(XmlPullParser parser) throws XmlPullParserException, IOException {
         Song mSong = new Song();
-
-        parser.require(XmlPullParser.START_TAG, null, "song");
+//        parser.require(XmlPullParser.START_TAG, null, "song");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -108,10 +108,8 @@ class LrcLoadMiguUtils {
                 general.name = readText(parser);
             } else if (name.equals("singer")) {
                 general.singer = readText(parser);
-            } else if (name.equals("type")) {
-                String p = readText(parser);
-                if (!p.isEmpty())
-                    general.type = Integer.parseInt(p);
+//            } else if (name.equals("type")) {
+//                general.type = Integer.parseInt(readText(parser));
             } else if (name.equals("mode_type")) {
                 general.mode_type = readText(parser);
             } else {
@@ -151,18 +149,21 @@ class LrcLoadMiguUtils {
 
             String name = parser.getName();
             if (name.equals("sentence")) {
-                LrcEntryData sentence = new LrcEntryData(new ArrayList<>());
-                paragraph.sentences.add(sentence);
+                List<LrcEntryData> sentence = new ArrayList<>();
                 readSentence(parser, sentence);
+                for(LrcEntryData item : sentence){
+                    paragraph.sentences.add(item);
+                }
             } else {
                 skip(parser);
             }
         }
     }
 
-    private static void readSentence(XmlPullParser parser, LrcEntryData sentence) throws XmlPullParserException, IOException {
+    private static void readSentence(XmlPullParser parser, List<LrcEntryData> list) throws XmlPullParserException, IOException {
+        LrcEntryData sentence = new LrcEntryData(new ArrayList<>());
+        list.add(sentence);
         parser.require(XmlPullParser.START_TAG, null, "sentence");
-
         String m = parser.getAttributeValue(null, "mode");
         if (m != null) {
             if (m.equals("man")) {
@@ -172,6 +173,10 @@ class LrcLoadMiguUtils {
             }
         }
 
+        int tone_index = 0;
+
+        boolean isEnglish = false;
+
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -179,25 +184,42 @@ class LrcLoadMiguUtils {
 
             String name = parser.getName();
             if (name.equals("tone")) {
+                tone_index++;
+                if((isEnglish || isEnglishSong(parser)) && tone_index > 5){
+                    sentence = new LrcEntryData(new ArrayList<>());
+                    list.add(sentence);
+                    tone_index = 0;
+                }
                 LrcEntryData.Tone tone = new LrcEntryData.Tone();
                 sentence.tones.add(tone);
-                readTone(parser, tone);
+                isEnglish = readTone(parser, tone);
             } else {
                 skip(parser);
             }
         }
     }
 
-    private static void readTone(XmlPullParser parser, LrcEntryData.Tone tone) throws XmlPullParserException, IOException {
+    private static boolean isEnglishSong(XmlPullParser parser) {
+        String lang = parser.getAttributeValue(null, "lang");
+        return lang != null && !"1".equals(lang);
+    }
+
+    private static boolean readTone(XmlPullParser parser, LrcEntryData.Tone tone) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, null, "tone");
+
+        boolean isEnglish = false;
 
         // read tone attributes
         tone.begin = (long) (Float.parseFloat(parser.getAttributeValue(null, "begin")) * 1000L);
         tone.end = (long) (Float.parseFloat(parser.getAttributeValue(null, "end")) * 1000L);
         String t = parser.getAttributeValue(null, "pitch");
         int pitch = 0;
-        if (t != null && !t.isEmpty()) {
-            pitch = Integer.parseInt(t);
+        if (!TextUtils.isEmpty(t)) {
+            try {
+                pitch = Integer.parseInt(t);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         tone.pitch = pitch;
 
@@ -208,6 +230,7 @@ class LrcLoadMiguUtils {
             tone.lang = LrcEntryData.Lang.Chinese;
         } else {
             tone.lang = LrcEntryData.Lang.English;
+            isEnglish = true;
         }
 
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -217,10 +240,29 @@ class LrcLoadMiguUtils {
             String name = parser.getName();
             if (name.equals("word")) {
                 tone.word = readText(parser);
+                // protect in case migu missed lang field
+                if(lang == null){
+                    isEnglish = checkLang(tone.word);
+                    if(isEnglish){
+                        tone.lang = LrcEntryData.Lang.English;
+                    }
+                }
             } else {
                 skip(parser);
             }
         }
+        return isEnglish;
+    }
+
+    private static boolean checkLang(String word) {
+        int n;
+        for(int i = 0; i < word.length(); i++) {
+            n = word.charAt(i);
+            if(!(19968 <= n && n <40869)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
