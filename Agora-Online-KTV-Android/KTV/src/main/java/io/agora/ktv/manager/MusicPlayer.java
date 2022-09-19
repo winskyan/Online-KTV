@@ -81,6 +81,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     private String mGetLrcRequestId;
     private boolean mIsOriginalSong;
 
+    private boolean mIsMusicListener;
+
     private final IMediaPlayerObserver mMediaPlayerObserver = new IMediaPlayerObserver() {
         @Override
         public void onPlayerStateChanged(io.agora.mediaplayer.Constants.MediaPlayerState state, io.agora.mediaplayer.Constants.MediaPlayerError error) {
@@ -228,6 +230,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         mMusicModel = null;
         mStatus = Status.IDLE;
         mIsOriginalSong = true;
+        mIsMusicListener = false;
     }
 
     public void registerPlayerObserver(Callback mCallback) {
@@ -326,7 +329,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
     public void stop() {
         mLogger.i("stop()  called");
-        if (mStatus == Status.IDLE) {
+        if (mStatus == Status.IDLE || mIsMusicListener) {
             onMusicStop();
             return;
         }
@@ -593,6 +596,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     protected void onMusicPlayingByListener() {
         mLogger.i("onMusicPlayingByListener() called");
         mStatus = Status.Started;
+        mIsMusicListener = true;
 
         mHandler.obtainMessage(ACTION_ON_MUSIC_PLAYING).sendToTarget();
     }
@@ -622,9 +626,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
             stopDisplayLrc();
             stopPublish();
-            reset();
         }
-
+        reset();
         mHandler.obtainMessage(ACTION_ON_MUSIC_STOP).sendToTarget();
     }
 
@@ -677,6 +680,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
     public String getLrcRequestId() {
         return mGetLrcRequestId;
+    }
+
+    public void remoteEmptyMusic() {
+        reset();
     }
 
     @MainThread

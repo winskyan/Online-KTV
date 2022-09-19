@@ -159,14 +159,15 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-            // 先停止
-            emptyMusic();
-            // 再播放下一曲
             mMusicQueue.offer(music);
+            // 先停止 再播放下一曲
+            emptyMusic();
         }
 
         @Override
         public void onMusicEmpty() {
+            //远程切歌
+            mMusicPlayer.remoteEmptyMusic();
             emptyMusic();
         }
 

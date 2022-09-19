@@ -206,7 +206,7 @@ public final class RtcManager {
                         mMusicModel.setUserId(remoteUserId);
                         onMusicChanged(mMusicModel);
                         // 远端切歌
-                    } else if (jsonMsg.getInt("state") == 0 && mMusicModel.getUserId().equals(remoteUserId)) {
+                    } else if (jsonMsg.getInt("state") == 0 && (null == mMusicModel || mMusicModel.getUserId().equals(remoteUserId))) {
                         onMusicEmpty();
                     }
                 } else if (cmd.equals("syncMember")) {

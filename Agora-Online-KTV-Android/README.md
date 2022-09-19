@@ -37,7 +37,7 @@ APP_CERTIFICATE=xxxxx
 
 ### 3. 下载SDK
 
-请参考 [说明](https://docs.agora.io/cn/online-ktv/downloads?platform=Android)
+请联系声网技术支持获取SDK
 
 ## 运行示例项目
 
