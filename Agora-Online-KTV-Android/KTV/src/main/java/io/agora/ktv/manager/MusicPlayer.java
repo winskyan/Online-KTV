@@ -382,10 +382,40 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     }
 
     public void toggleOriginal() {
+        if (null == mMusicModel) {
+            return;
+        }
+        int ret = -1;
+
+        /*
+         * Song type
+         * 1：既有伴奏又有原唱的歌曲
+         * 2：只有伴奏的歌曲
+         * 3：只有原唱的歌曲
+         * 4：有多音轨纯音频及其MV资源
+         * 5：没有多音轨纯音频的纯MV资源
+         * 6：DRM
+         */
+
         if (mIsOriginalSong) {
-            selectAudioTrack(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_L.ordinal());
+            //伴唱
+            if (mMusicModel.getType() == 1) {
+                //左伴右唱
+                ret = mAgoraMusicPlayer.setAudioDualMonoMode(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_L.ordinal());
+            } else if (mMusicModel.getType() == 4 || mMusicModel.getType() == 6) {
+                //多音轨
+                ret = mAgoraMusicPlayer.selectAudioTrack(1);
+            }
         } else {
-            selectAudioTrack(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_STEREO.ordinal());
+            //原唱
+            if (mMusicModel.getType() == 1) {
+                ret = mAgoraMusicPlayer.setAudioDualMonoMode(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_R.ordinal());
+            } else if (mMusicModel.getType() == 4 || mMusicModel.getType() == 6) {
+                ret = mAgoraMusicPlayer.selectAudioTrack(0);
+            }
+        }
+        if (0 == ret) {
+            mIsOriginalSong = !mIsOriginalSong;
         }
     }
 

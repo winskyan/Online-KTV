@@ -190,6 +190,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
         model.setUserId(mUser.getObjectId());
         model.setId(data.getMusicId());
         model.setMusicId(data.getMusicId());
+        model.setType(data.getType());
 
         RtcManager.Instance(requireContext()).onMusicChanged(model);
         KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());

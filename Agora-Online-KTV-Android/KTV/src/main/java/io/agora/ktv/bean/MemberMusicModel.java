@@ -16,7 +16,7 @@ import java.io.Serializable;
  * @date 2021/6/9
  */
 public class MemberMusicModel implements Parcelable {
-    public enum Type implements Serializable {
+    public enum MusicType implements Serializable {
         Default, MiGu;
     }
 
@@ -34,7 +34,8 @@ public class MemberMusicModel implements Parcelable {
     private File fileMusic;
     private File fileLrc;
 
-    private Type type = Type.MiGu;
+    private MusicType musicType = MusicType.MiGu;
+    private int type;
 
     public MemberMusicModel(String musicId) {
         this.musicId = musicId;
@@ -45,6 +46,7 @@ public class MemberMusicModel implements Parcelable {
         this.musicId = data.getMusicId();
         this.singer = data.getSinger();
         this.poster = data.getPoster();
+        this.type = data.getType();
     }
 
     protected MemberMusicModel(Parcel in) {
@@ -58,8 +60,9 @@ public class MemberMusicModel implements Parcelable {
         lrc = in.readString();
         fileMusic = (File) in.readSerializable();
         fileLrc = (File) in.readSerializable();
-        type = (Type) in.readSerializable();
+        musicType = (MusicType) in.readSerializable();
         userId = in.readString();
+        type = in.readInt();
     }
 
     @Override
@@ -74,8 +77,9 @@ public class MemberMusicModel implements Parcelable {
         dest.writeString(lrc);
         dest.writeSerializable(fileMusic);
         dest.writeSerializable(fileLrc);
-        dest.writeSerializable(type);
+        dest.writeSerializable(musicType);
         dest.writeString(userId);
+        dest.writeInt(type);
     }
 
     @Override
@@ -183,11 +187,19 @@ public class MemberMusicModel implements Parcelable {
         this.fileLrc = fileLrc;
     }
 
-    public Type getType() {
+    public MusicType getMusicType() {
+        return musicType;
+    }
+
+    public void setMusicType(MusicType musicType) {
+        this.musicType = musicType;
+    }
+
+    public int getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(int type) {
         this.type = type;
     }
 
@@ -225,6 +237,7 @@ public class MemberMusicModel implements Parcelable {
                 ", lrc='" + lrc + '\'' +
                 ", fileMusic=" + fileMusic +
                 ", fileLrc=" + fileLrc +
+                ", musicType=" + musicType +
                 ", type=" + type +
                 '}';
     }

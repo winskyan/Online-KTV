@@ -17,6 +17,7 @@ public class MusicModel implements Parcelable {
     private String lrc;
     private String singer;
     private String poster;
+    private int type;
 
     public MusicModel() {
 
@@ -32,6 +33,7 @@ public class MusicModel implements Parcelable {
         lrc = in.readString();
         singer = in.readString();
         poster = in.readString();
+        type = in.readInt();
     }
 
     @Override
@@ -45,6 +47,7 @@ public class MusicModel implements Parcelable {
         dest.writeString(lrc);
         dest.writeString(singer);
         dest.writeString(poster);
+        dest.writeInt(type);
     }
 
     @Override
@@ -134,5 +137,13 @@ public class MusicModel implements Parcelable {
 
     public void setPoster(String poster) {
         this.poster = poster;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

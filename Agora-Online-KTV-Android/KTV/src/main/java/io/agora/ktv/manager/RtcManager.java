@@ -93,6 +93,7 @@ public final class RtcManager {
                     music.setCreatedAt(musicItem.getReleaseTime());
                     music.setSinger(musicItem.getSinger());
                     music.setPoster(musicItem.getPoster());
+                    music.setType(musicItem.getType());
                     musics[i] = music;
                 }
                 mMainThreadDispatch.onMusicCollectionResult(requestId, musics);
