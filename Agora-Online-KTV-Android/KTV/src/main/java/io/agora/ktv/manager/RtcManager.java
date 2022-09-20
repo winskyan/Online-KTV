@@ -207,7 +207,7 @@ public final class RtcManager {
                         onMusicChanged(mMusicModel);
                         // 远端切歌
                     } else if (jsonMsg.getInt("state") == 0 && (null == mMusicModel || mMusicModel.getUserId().equals(remoteUserId))) {
-                        onMusicEmpty();
+                        remoteOnMusicEmpty();
                     }
                 } else if (cmd.equals("syncMember")) {
                     AgoraMember member = new AgoraMember();
@@ -342,11 +342,17 @@ public final class RtcManager {
         mMainThreadDispatch.onAudioStatusChanged(isMine, member);
     }
 
-    public void onMusicEmpty() {
-        mLogger.i("onMusicEmpty() called");
+    private void remoteOnMusicEmpty() {
+        mLogger.i("remoteOnMusicEmpty() called");
         mMainThreadDispatch.onMusicEmpty();
         mMusicModel = null;
     }
+
+    public void localOnMusicEmpty() {
+        mLogger.i("localOnMusicEmpty() called");
+        mMusicModel = null;
+    }
+
 
     public void onMusicChanged(MemberMusicModel model) {
         mLogger.i("onMusicChanged() called with: model = [%s]", model);

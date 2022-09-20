@@ -111,6 +111,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         public void onMusicStop() {
             if (!mMusicQueue.isEmpty()) {
                 RoomActivity.this.onMusicChanged(mMusicQueue.pop());
+            } else {
+                RtcManager.Instance(getApplicationContext()).localOnMusicEmpty();
             }
         }
 
@@ -423,6 +425,15 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
     }
 
     private void showChooseSongDialog() {
+        User user = UserManager.Instance().getUserLiveData().getValue();
+        if (user == null) {
+            return;
+        }
+
+        if (null != mMusicPlayer.getMusicModel() && !mMusicPlayer.getMusicModel().getUserId().equals(user.getObjectId())) {
+            ToastUtils.toastLong(getApplicationContext(), getApplicationContext().getString(R.string.ktv_cannot_choose_song));
+            return;
+        }
         new RoomChooseSongDialog().show(getSupportFragmentManager());
     }
 
@@ -578,8 +589,9 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         if (user != null) {
             RtcManager roomManager = RtcManager.Instance(this);
             MemberMusicModel model = roomManager.getMusicModel();
-            if (model != null && model.getUserId() != null && model.getUserId().equals(user.getObjectId()))
+            if (model != null && model.getUserId() != null && model.getUserId().equals(user.getObjectId())) {
                 mMusicPlayer.sendSyncLrc(model.getMusicId(), 0, 0, false);
+            }
         }
         mDataBinding.lrcControlView.getLrcView().reset();
         mDataBinding.lrcControlView.onIdleStatus();

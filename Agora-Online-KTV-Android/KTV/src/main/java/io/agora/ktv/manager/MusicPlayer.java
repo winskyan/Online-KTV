@@ -443,10 +443,12 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
             @Override
             public void run() {
-                DataStreamConfig cfg = new DataStreamConfig();
-                cfg.syncWithAudio = false;
-                cfg.ordered = false;
-                mStreamId = mRtcEngine.createDataStream(cfg);
+                if (-1 == mStreamId) {
+                    DataStreamConfig cfg = new DataStreamConfig();
+                    cfg.syncWithAudio = false;
+                    cfg.ordered = false;
+                    mStreamId = mRtcEngine.createDataStream(cfg);
+                }
 
                 mStopSyncLrc = false;
                 while (!mStopSyncLrc) {
@@ -623,10 +625,9 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         mLogger.i("onMusicStop() called");
         if (mStatus != Status.IDLE) {
             mStatus = Status.Stopped;
-
-            stopDisplayLrc();
-            stopPublish();
         }
+        stopDisplayLrc();
+        stopPublish();
         reset();
         mHandler.obtainMessage(ACTION_ON_MUSIC_STOP).sendToTarget();
     }
