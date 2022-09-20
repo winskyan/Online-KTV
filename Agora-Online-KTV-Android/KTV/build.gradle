@@ -24,7 +24,7 @@ android {
         minSdkVersion MINSDKVERSION
         targetSdkVersion TARGETSDKVERSION
         versionCode 9
-        versionName "2.0.1"
+        versionName "4.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
