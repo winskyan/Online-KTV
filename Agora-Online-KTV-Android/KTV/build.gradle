@@ -77,15 +77,11 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation files('libs/agora-rtc-sdk.jar')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     //implementation 'com.github.AgoraIO-Community:LrcView-Android:1.0.5'
-
-    //Agora SDK
-    //implementation 'io.agora.rtc:full-sdk:3.5.1'
 
     implementation project(':data')
     implementation project(':AgoraDynamicKey')

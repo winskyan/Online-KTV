@@ -35,9 +35,6 @@ APP_CERTIFICATE=xxxxx
 
 （3）为了测试方便，防止RTM TOKEN过期，APP_CERTIFICATE值仅仅为了动态生成RTM TOKEN使用;
 
-### 3. 下载SDK
-
-请联系声网技术支持获取SDK
 
 ## 运行示例项目
 

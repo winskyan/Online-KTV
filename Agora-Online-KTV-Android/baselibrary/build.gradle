@@ -78,4 +78,7 @@ dependencies {
     api 'androidx.palette:palette:1.0.0'
 
     api 'jp.wasabeef:glide-transformations:4.0.0'
+
+    //Agora SDK
+    api 'io.agora.rtc:agora-special-full:4.0.0.5'
 }
