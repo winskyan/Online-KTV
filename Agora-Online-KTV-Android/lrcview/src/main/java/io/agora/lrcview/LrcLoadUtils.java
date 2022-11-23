@@ -45,6 +45,8 @@ public class LrcLoadUtils {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            }catch (Exception e){
+                e.printStackTrace();
             } finally {
                 try {
                     if (instream != null) {

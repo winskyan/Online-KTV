@@ -2,6 +2,7 @@ package io.agora.ktv.view;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -43,7 +44,7 @@ import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBinding> implements OnItemClickListener<MusicModel> {
     private final Logger.Builder mLogger = XLog.tag("SongsFragment");
 
-    private static final int MUSIC_PAGE_SIZE = 10;
+    private static final int MUSIC_PAGE_SIZE = 100;
 
     private IAgoraMusicContentCenter mMcc;
     private String mMusicChartsRequestId;
@@ -52,6 +53,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     private final RoomEventCallback callback = new RoomEventCallback() {
         @Override
         public void onMusicChartsResult(String requestId, AgoraMusicCharts[] musicCharts) {
+            Log.i("preload2","onMusicChartsResult,musicCharts="+ Arrays.toString(musicCharts));
             if (!TextUtils.isEmpty(mMusicChartsRequestId) && mMusicChartsRequestId.equals(requestId)) {
                 //加载第一个排行榜
                 if (musicCharts.length > 0) {
@@ -62,6 +64,8 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
         @Override
         public void onMusicCollectionResult(String requestId, MusicModel[] musics) {
+            Log.i("preload2","onMusicCollectionResult,musics="+ Arrays.toString(musics));
+
             if (!TextUtils.isEmpty(mMusicCollectionRequestId) && mMusicCollectionRequestId.equals(requestId)) {
                 if (musics.length > 0) {
                     onLoadMusics(Arrays.asList(musics));
@@ -193,8 +197,8 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
         model.setType(data.getType());
 
         RtcManager.Instance(requireContext()).onMusicChanged(model);
-        KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
-        requireActivity().onBackPressed();
+        //KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
+        //requireActivity().onBackPressed();
 
     }
 

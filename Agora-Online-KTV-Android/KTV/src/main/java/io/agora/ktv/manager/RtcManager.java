@@ -19,6 +19,9 @@ import com.elvishew.xlog.XLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.agora.baselibrary.util.ToastUtils;
 import io.agora.ktv.BuildConfig;
 import io.agora.ktv.bean.MemberMusicModel;
@@ -65,6 +68,10 @@ public final class RtcManager {
     private IAgoraMusicContentCenter mMcc;
     private IAgoraMusicPlayer mAgoraMusicPlayer;
 
+    private MusicContentCenterConfiguration mConfig;
+
+    private List<Double> voicePitchList = new ArrayList<>();
+
     /**
      * 唱歌人的UserId
      */
@@ -72,8 +79,12 @@ public final class RtcManager {
     private IMusicContentCenterEventHandler mIMccEventHandler = new IMusicContentCenterEventHandler() {
         @Override
         public void onPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
-            mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + msg + "," + lyricUrl);
-            if (0 == status && percent == 100) {
+            mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + lyricUrl);
+            if (0 == status) {
+                if (percent == 100) {
+                    mMainThreadDispatch.onMusicPreLoadEvent(songCode, lyricUrl);
+                }
+            } else if (2 != status) {
                 mMainThreadDispatch.onMusicPreLoadEvent(songCode, lyricUrl);
             }
         }
@@ -111,7 +122,6 @@ public final class RtcManager {
                     agoraMusicCharts.setName(list[i].name);
                     agoraMusicCharts.setType(list[i].type);
                     musicCharts[i] = agoraMusicCharts;
-
                 }
                 mMainThreadDispatch.onMusicChartsResult(requestId, musicCharts);
             }
@@ -125,6 +135,14 @@ public final class RtcManager {
     };
 
     private IRtcEngineEventHandler mIRtcEngineEventHandler = new IRtcEngineEventHandler() {
+
+        @Override
+        public void onAudioVolumeIndication(AudioVolumeInfo[] speakers, int totalVolume) {
+            super.onAudioVolumeIndication(speakers, totalVolume);
+            if (null != speakers && speakers.length > 0) {
+                voicePitchList.add(speakers[0].voicePitch);
+            }
+        }
 
         @Override
         public void onError(int err) {
@@ -230,7 +248,7 @@ public final class RtcManager {
     private RtcManager(Context mContext) {
         this.mContext = mContext;
         iniRTC();
-        initMcc();
+        //initMcc();
     }
 
     private void iniRTC() {
@@ -242,13 +260,15 @@ public final class RtcManager {
         try {
             mRtcEngine = RtcEngine.create(config);
             mRtcEngine.setChannelProfile(Constants.CHANNEL_PROFILE_LIVE_BROADCASTING);
+
+            mLoggerRTC.i("SDK version:" + RtcEngine.getSdkVersion());
         } catch (Exception e) {
             e.printStackTrace();
             mLoggerRTC.e("init error", e);
         }
     }
 
-    private void initMcc() {
+    public void initMcc() {
         if (null == getRtcEngine()) {
             ToastUtils.toastLong(mContext, "please init rtc engine first!");
             return;
@@ -266,18 +286,28 @@ public final class RtcManager {
             RtmTokenBuilder token = new RtmTokenBuilder();
             String rtmToken = token.buildToken(BuildConfig.APP_ID, BuildConfig.APP_CERTIFICATE, String.valueOf(mccUid), RtmTokenBuilder.Role.Rtm_User, 0);
 
-            MusicContentCenterConfiguration config = new MusicContentCenterConfiguration();
-            config.appId = BuildConfig.APP_ID;
-            config.mccUid = mccUid;
-            config.rtmToken = rtmToken;
-            config.eventHandler = mIMccEventHandler;
-            mMcc.initialize(config);
+            mConfig = new MusicContentCenterConfiguration();
+            mConfig.appId = BuildConfig.APP_ID;
+            mConfig.mccUid = mccUid;
+            mConfig.token = rtmToken;
+            mConfig.eventHandler = mIMccEventHandler;
+            mMcc.initialize(mConfig);
 
             mAgoraMusicPlayer = mMcc.createMusicPlayer();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void destroyMcc() {
+        mMcc.unregisterEventHandler();
+        IAgoraMusicContentCenter.destroy();
+        mAgoraMusicPlayer.destroy();
+        mAgoraMusicPlayer = null;
+        mMcc = null;
+        mConfig.eventHandler = null;
+        mConfig = null;
     }
 
     public RtcEngine getRtcEngine() {
@@ -452,5 +482,13 @@ public final class RtcManager {
         if (isMute) mute = 1;
         mMine.setIsSelfMuted(mute);
         return Completable.complete();
+    }
+
+    public List<Double> getVoicePitchList() {
+        return voicePitchList;
+    }
+
+    public void resetVoicePitchList() {
+        voicePitchList.clear();
     }
 }

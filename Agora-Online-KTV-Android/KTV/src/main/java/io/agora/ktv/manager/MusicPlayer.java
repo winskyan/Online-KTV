@@ -127,9 +127,6 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         public void onPreloadEvent(String src, io.agora.mediaplayer.Constants.MediaPlayerPreloadEvent event) {
         }
 
-        @Override
-        public void onCompleted() {
-        }
 
         @Override
         public void onAgoraCDNTokenWillExpire() {
@@ -317,10 +314,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
             return;
         }
 
-        if (mStatus.isAtLeast(Status.Opened)) {
+        /*if (mStatus.isAtLeast(Status.Opened)) {
             mLogger.e("play: current player is in playing state already, abort playing");
             return;
-        }
+        }*/
 
         int ret = mAgoraMusicPlayer.open(songCode, 0);
         mLogger.i("open() called ret= %s", ret);
@@ -613,7 +610,9 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
         startDisplayLrc();
 
+        RtcManager.Instance(mContext).resetVoicePitchList();
         mAgoraMusicPlayer.play();
+
 
         mHandler.obtainMessage(ACTION_ON_MUSIC_OPENCOMPLETED, mAgoraMusicPlayer.getDuration()).sendToTarget();
     }
@@ -705,6 +704,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }
     }
 
+    public boolean isPreload(long songCode) {
+        return 0 == mMcc.isPreloaded(songCode);
+    }
+
     public MemberMusicModel getMusicModel() {
         return mMusicModel;
     }
@@ -715,6 +718,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
     public void remoteEmptyMusic() {
         reset();
+    }
+
+    public boolean isPlaying() {
+        return mStatus == Status.Started;
     }
 
     @MainThread
