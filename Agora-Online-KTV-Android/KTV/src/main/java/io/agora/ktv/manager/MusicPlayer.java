@@ -363,13 +363,6 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }
     }
 
-    public void selectAudioTrack(int audioTrackMode) {
-        int ret = mAgoraMusicPlayer.selectAudioTrack(audioTrackMode);
-        if (0 == ret) {
-            mIsOriginalSong = !mIsOriginalSong;
-        }
-    }
-
     public void seek(long time) {
         mAgoraMusicPlayer.seek(time);
     }
@@ -379,10 +372,18 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     }
 
     public void toggleOriginal() {
-        if (null == mMusicModel) {
-            return;
+        mIsOriginalSong = !mIsOriginalSong;
+        if (0 != checkOriginal()) {
+            //设置失败
+            mIsOriginalSong = !mIsOriginalSong;
         }
+    }
+
+    private int checkOriginal() {
         int ret = -1;
+        if (null == mMusicModel) {
+            return ret;
+        }
 
         /*
          * Song type
@@ -395,6 +396,13 @@ public class MusicPlayer extends IRtcEngineEventHandler {
          */
 
         if (mIsOriginalSong) {
+            //原唱
+            if (mMusicModel.getType() == 1) {
+                ret = mAgoraMusicPlayer.setAudioDualMonoMode(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_R.ordinal());
+            } else if (mMusicModel.getType() == 4 || mMusicModel.getType() == 6) {
+                ret = mAgoraMusicPlayer.selectAudioTrack(0);
+            }
+        } else {
             //伴唱
             if (mMusicModel.getType() == 1) {
                 //左伴右唱
@@ -403,17 +411,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
                 //多音轨
                 ret = mAgoraMusicPlayer.selectAudioTrack(1);
             }
-        } else {
-            //原唱
-            if (mMusicModel.getType() == 1) {
-                ret = mAgoraMusicPlayer.setAudioDualMonoMode(io.agora.mediaplayer.Constants.AudioDualMonoMode.AUDIO_DUAL_MONO_R.ordinal());
-            } else if (mMusicModel.getType() == 4 || mMusicModel.getType() == 6) {
-                ret = mAgoraMusicPlayer.selectAudioTrack(0);
-            }
         }
-        if (0 == ret) {
-            mIsOriginalSong = !mIsOriginalSong;
-        }
+        return ret;
     }
 
     public void setMusicVolume(int v) {
@@ -611,8 +610,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         startDisplayLrc();
 
         RtcManager.Instance(mContext).resetVoicePitchList();
+        checkOriginal();
         mAgoraMusicPlayer.play();
-
 
         mHandler.obtainMessage(ACTION_ON_MUSIC_OPENCOMPLETED, mAgoraMusicPlayer.getDuration()).sendToTarget();
     }
