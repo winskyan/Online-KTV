@@ -1,6 +1,12 @@
 package io.agora.ktv.manager;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,6 +77,8 @@ public final class RtcManager {
     private MusicContentCenterConfiguration mConfig;
 
     private List<Double> voicePitchList = new ArrayList<>();
+
+    private ConnectivityManager mConnMgr;
 
     /**
      * 唱歌人的UserId
@@ -247,8 +255,28 @@ public final class RtcManager {
 
     private RtcManager(Context mContext) {
         this.mContext = mContext;
+
+        mConnMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        initData();
         iniRTC();
         //initMcc();
+        register();
+    }
+
+    private void initData() {
+    }
+
+    private void register() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        mContext.registerReceiver(mNetworkStateReceiver, intentFilter);
+    }
+
+    private void unregister() {
+        if (null != mContext) {
+            mContext.unregisterReceiver(mNetworkStateReceiver);
+        }
     }
 
     private void iniRTC() {
@@ -294,6 +322,7 @@ public final class RtcManager {
             mMcc.initialize(mConfig);
 
             mAgoraMusicPlayer = mMcc.createMusicPlayer();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -491,4 +520,45 @@ public final class RtcManager {
     public void resetVoicePitchList() {
         voicePitchList.clear();
     }
+
+    private BroadcastReceiver mNetworkStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
+                boolean isNetworkConnected = false;
+                //检测API是不是小于23，因为到了API23之后getNetworkInfo(int networkType)方法被弃用
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    //获取WIFI连接的信息
+                    NetworkInfo wifiNetworkInfo = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    //获取移动数据连接的信息
+                    NetworkInfo dataNetworkInfo = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+                    if (wifiNetworkInfo.isConnected() || dataNetworkInfo.isConnected()) {
+                        //网络连接
+                        isNetworkConnected = true;
+                    } else {
+                        //网络断开
+                    }
+                } else {
+                    //API大于23时使用下面的方式进行网络监听
+                    //获取所有网络连接的信息
+                    Network[] networks = mConnMgr.getAllNetworks();
+                    //通过循环将网络信息逐个取出来
+                    for (int i = 0; i < networks.length; i++) {
+                        //获取ConnectivityManager对象对应的NetworkInfo对象
+                        NetworkInfo networkInfo = mConnMgr.getNetworkInfo(networks[i]);
+                        if (networkInfo.isConnected()) {
+                            isNetworkConnected = true;
+                            break;
+                        }
+                    }
+                }
+                if (isNetworkConnected) {
+                    mLogger.i("network connnected");
+                } else {
+                    mLogger.i("network disconnected");
+                }
+            }
+        }
+    };
 }

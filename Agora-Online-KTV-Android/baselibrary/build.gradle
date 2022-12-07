@@ -80,5 +80,5 @@ dependencies {
     api 'jp.wasabeef:glide-transformations:4.0.0'
 
     //Agora SDK
-    api 'io.agora.rtc:agora-special-voice:4.0.1.3'
+    //api 'io.agora.rtc:agora-special-voice:4.0.1.3'
 }

@@ -320,6 +320,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }*/
 
         int ret = mAgoraMusicPlayer.open(songCode, 0);
+        //int ret = mAgoraMusicPlayer.open("http://agora.fronted.love/yyl.mov",0);
         mLogger.i("open() called ret= %s", ret);
     }
 
@@ -696,7 +697,9 @@ public class MusicPlayer extends IRtcEngineEventHandler {
             if (0 == mMcc.isPreloaded(mSongCode)) {
                 mGetLrcRequestId = mMcc.getLyric(mSongCode, 0);
             } else {
-                mMcc.preload(mSongCode, null);
+                mLogger.i("preload song code=%s", musicModel.getMusicId());
+                int ret = mMcc.preload(mSongCode, null);
+                mLogger.i("preload song code ret =%d", ret);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -721,6 +724,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
     public boolean isPlaying() {
         return mStatus == Status.Started;
+    }
+
+    public String getPlaySrc() {
+        return mAgoraMusicPlayer.getPlaySrc();
     }
 
     @MainThread

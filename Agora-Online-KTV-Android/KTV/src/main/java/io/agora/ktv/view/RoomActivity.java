@@ -67,13 +67,13 @@ import jp.wasabeef.glide.transformations.BlurTransformation;
  */
 public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> implements View.OnClickListener, OnItemClickListener<AgoraMember> {
     public static final String TAG_ROOM = "room";
-    private final Logger.Builder mLogger = XLog.tag("RoomActivity");
+    private final Logger.Builder mLogger = XLog.tag("RoomManager");
 
     private RoomSpeakerAdapter mRoomSpeakerAdapter;
     private MusicPlayer mMusicPlayer;
     private Deque<MemberMusicModel> mMusicQueue;
-    private Map<Long, MemberMusicModel> songs = new LinkedHashMap<>(10);
-    private Map<Long, MemberMusicModel> preloadSongs = new LinkedHashMap<>(10);
+    private final Map<Long, MemberMusicModel> songs = new LinkedHashMap<>(10);
+    private final Map<Long, MemberMusicModel> preloadSongs = new LinkedHashMap<>(10);
 
     private final MusicPlayer.Callback mMusicCallback = new MusicPlayer.Callback() {
 
@@ -116,14 +116,13 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicStop() {
-            Log.i("preload2", "onMusicStop mMusicQueue=" + mMusicQueue);
-            Log.i("preload2", "voice pitch list=" + RtcManager.Instance(getApplicationContext()).getVoicePitchList());
             //String mContent = String.valueOf(RtcManager.Instance(getApplicationContext()).getVoicePitchList());
             // String mPath = getApplicationContext().getCacheDir().getPath()+"/";
             // FileUtils.writeTxtToFile(mContent, mPath, "pitch-android.txt");
             RtcManager.Instance(getApplicationContext()).resetVoicePitchList();
 
             if (!mMusicQueue.isEmpty()) {
+                mLogger.i("music stop queue size=" + mMusicQueue.size() + ",songs=" + mMusicQueue);
                 RoomActivity.this.onMusicChanged(mMusicQueue.pop());
             } else {
                 RtcManager.Instance(getApplicationContext()).localOnMusicEmpty();
@@ -175,9 +174,11 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-            //music.setMusicId("6599298045039010");
+            //music.setMusicId("6599297803980740");
 
             mMusicQueue.offer(music);
+            mLogger.i("music select queue size=" + mMusicQueue.size() + ",songs=" + mMusicQueue);
+
 
             long songCode = Long.parseLong(music.getMusicId());
             if (songs.containsKey(songCode) || preloadSongs.containsKey(songCode)) {
@@ -187,7 +188,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                 return;
             }
             if (!mMusicPlayer.isPreload(songCode)) {
-                Log.i("preload2", "songs.size=" + songs.size() + ",preload=" + preloadSongs.size());
+                mLogger.i("songs.size=" + songs.size() + ",preload=" + preloadSongs.size());
                 if (preloadSongs.size() < 10) {
                     preloadSongs.put(songCode, music);
                     runOnUiThread(new Runnable() {
@@ -228,7 +229,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                 preloadSongs.put(tempSongCode, tempMusic);
                 songs.remove(tempSongCode);
             }
-            Log.i("preload2", "onMusicPreLoadEvent songs=" + songs.size() + ",preloadSongs=" + preloadSongs.size());
+            mLogger.i("onMusicPreLoadEvent songs=" + songs.size() + ",preloadSongs=" + preloadSongs.size());
 
             if (preloadSongs.size() > 0) {
                 runOnUiThread(new Runnable() {
