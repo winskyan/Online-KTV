@@ -53,7 +53,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     private final RoomEventCallback callback = new RoomEventCallback() {
         @Override
         public void onMusicChartsResult(String requestId, AgoraMusicCharts[] musicCharts) {
-            Log.i("preload2","onMusicChartsResult,musicCharts="+ Arrays.toString(musicCharts));
+            mLogger.i("onMusicChartsResult,musicCharts=" + Arrays.toString(musicCharts));
             if (!TextUtils.isEmpty(mMusicChartsRequestId) && mMusicChartsRequestId.equals(requestId)) {
                 //加载第一个排行榜
                 if (musicCharts.length > 0) {
@@ -64,7 +64,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
         @Override
         public void onMusicCollectionResult(String requestId, MusicModel[] musics) {
-            Log.i("preload2","onMusicCollectionResult,musics="+ Arrays.toString(musics));
+            mLogger.i("onMusicCollectionResult,musics=" + Arrays.toString(musics));
 
             if (!TextUtils.isEmpty(mMusicCollectionRequestId) && mMusicCollectionRequestId.equals(requestId)) {
                 if (musics.length > 0) {
@@ -205,6 +205,9 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     private void searchMusic() {
         if (!TextUtils.isEmpty(mDataBinding.etSearchKey.getText().toString())) {
             //默认搜索前十首歌曲
+            //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE,"{\"songType\":[1,4]}");
+            //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE);
+
             mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE);
         }
     }
