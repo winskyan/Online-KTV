@@ -139,9 +139,12 @@ public class MainThreadDispatch implements RoomEventCallback {
             } else if (msg.what == ON_MUSIC_PRELOAD_EVENT) {
                 Bundle bundle = msg.getData();
                 long songCode = bundle.getLong("songCode");
+                int percent = bundle.getInt("percent");
+                int status = bundle.getInt("status");
+                String preloadMsg = bundle.getString("msg");
                 String lyricUrl = bundle.getString("lyricUrl");
                 for (RoomEventCallback callback : eventCallbacks) {
-                    callback.onMusicPreLoadEvent(songCode, lyricUrl);
+                    callback.onMusicPreLoadEvent(songCode, percent, status, preloadMsg, lyricUrl);
                 }
             } else if (msg.what == ON_LYRIC_RESULT) {
                 Bundle bundle = msg.getData();
@@ -278,11 +281,14 @@ public class MainThreadDispatch implements RoomEventCallback {
     }
 
     @Override
-    public void onMusicPreLoadEvent(long songCode, String lyricUrl) {
+    public void onMusicPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
         mLogger.d("onMusicPreLoadEvent() called with: songCode = [%s],lyricUrl=[%s]", songCode, lyricUrl);
 
         Bundle bundle = new Bundle();
         bundle.putLong("songCode", songCode);
+        bundle.putInt("percent", percent);
+        bundle.putInt("status", status);
+        bundle.putString("msg", msg);
         bundle.putString("lyricUrl", lyricUrl);
 
         Message message = mHandler.obtainMessage(ON_MUSIC_PRELOAD_EVENT);

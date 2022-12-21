@@ -88,13 +88,7 @@ public final class RtcManager {
         @Override
         public void onPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
             mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + lyricUrl);
-            if (0 == status) {
-                if (percent == 100) {
-                    mMainThreadDispatch.onMusicPreLoadEvent(songCode, lyricUrl);
-                }
-            } else if (2 != status) {
-                mMainThreadDispatch.onMusicPreLoadEvent(songCode, lyricUrl);
-            }
+            mMainThreadDispatch.onMusicPreLoadEvent(songCode, percent, status, msg, lyricUrl);
         }
 
         @Override
@@ -526,33 +520,16 @@ public final class RtcManager {
         public void onReceive(Context context, Intent intent) {
             if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
                 boolean isNetworkConnected = false;
-                //检测API是不是小于23，因为到了API23之后getNetworkInfo(int networkType)方法被弃用
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    //获取WIFI连接的信息
-                    NetworkInfo wifiNetworkInfo = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                    //获取移动数据连接的信息
-                    NetworkInfo dataNetworkInfo = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+                //获取WIFI连接的信息
+                NetworkInfo wifiNetworkInfo = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                //获取移动数据连接的信息
+                NetworkInfo dataNetworkInfo = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-                    if (wifiNetworkInfo.isConnected() || dataNetworkInfo.isConnected()) {
-                        //网络连接
-                        isNetworkConnected = true;
-                    } else {
-                        //网络断开
-                    }
-                } else {
-                    //API大于23时使用下面的方式进行网络监听
-                    //获取所有网络连接的信息
-                    Network[] networks = mConnMgr.getAllNetworks();
-                    //通过循环将网络信息逐个取出来
-                    for (int i = 0; i < networks.length; i++) {
-                        //获取ConnectivityManager对象对应的NetworkInfo对象
-                        NetworkInfo networkInfo = mConnMgr.getNetworkInfo(networks[i]);
-                        if (networkInfo.isConnected()) {
-                            isNetworkConnected = true;
-                            break;
-                        }
-                    }
+                if (wifiNetworkInfo.isConnected() || dataNetworkInfo.isConnected()) {
+                    //网络连接
+                    isNetworkConnected = true;
                 }
+
                 if (isNetworkConnected) {
                     mLogger.i("network connnected");
                 } else {

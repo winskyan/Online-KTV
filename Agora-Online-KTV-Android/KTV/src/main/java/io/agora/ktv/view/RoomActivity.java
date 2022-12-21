@@ -216,30 +216,33 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         @Override
-        public void onMusicPreLoadEvent(long songCode, String lyricUrl) {
-            loadLrc(songCode, lyricUrl);
+        public void onMusicPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
+            if (status == 0) {
+                if (percent == 100) {
+                    loadLrc(songCode, lyricUrl);
 
-            preloadSongs.remove(songCode);
+                    preloadSongs.remove(songCode);
 
-            MemberMusicModel tempMusic = null;
-            long tempSongCode = -1;
-            while (preloadSongs.size() < 10 && songs.size() > 0) {
-                tempSongCode = songs.entrySet().iterator().next().getKey();
-                tempMusic = songs.entrySet().iterator().next().getValue();
-                preloadSongs.put(tempSongCode, tempMusic);
-                songs.remove(tempSongCode);
-            }
-            mLogger.i("onMusicPreLoadEvent songs=" + songs.size() + ",preloadSongs=" + preloadSongs.size());
-
-            if (preloadSongs.size() > 0) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        prepareMusic(preloadSongs.entrySet().iterator().next().getValue());
-                        preloadSongs.remove(preloadSongs.entrySet().iterator().next().getKey());
+                    MemberMusicModel tempMusic = null;
+                    long tempSongCode = -1;
+                    while (preloadSongs.size() < 10 && songs.size() > 0) {
+                        tempSongCode = songs.entrySet().iterator().next().getKey();
+                        tempMusic = songs.entrySet().iterator().next().getValue();
+                        preloadSongs.put(tempSongCode, tempMusic);
+                        songs.remove(tempSongCode);
                     }
-                });
+                    mLogger.i("onMusicPreLoadEvent songs=" + songs.size() + ",preloadSongs=" + preloadSongs.size());
 
+                    if (preloadSongs.size() > 0) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                prepareMusic(preloadSongs.entrySet().iterator().next().getValue());
+                                preloadSongs.remove(preloadSongs.entrySet().iterator().next().getKey());
+                            }
+                        });
+                    }
+                }
             }
         }
 
