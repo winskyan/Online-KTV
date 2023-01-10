@@ -207,6 +207,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
             //默认搜索前十首歌曲
             //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE,"{\"songType\":[1,4]}");
             //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE);
+            //mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE,"{\"pitchType\":1,\"needLyric\":true}");
 
             mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE);
         }
