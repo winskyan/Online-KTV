@@ -216,8 +216,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         @Override
-        public void onMusicPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
-            if (status == 0) {
+        public void onMusicPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
+            if (errorCode == 0) {
                 if (percent == 100) {
                     loadLrc(songCode, lyricUrl);
 
@@ -248,6 +248,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onLyricResult(String requestId, String lyricUrl) {
+            Log.i(TAG_ROOM, "onLyricResult requestId=" + requestId + ",lyricUrl");
             if (requestId.equals(mMusicPlayer.getLrcRequestId())) {
                 try {
                     loadLrc(Long.parseLong(mMusicPlayer.getMusicModel().getMusicId()), lyricUrl);

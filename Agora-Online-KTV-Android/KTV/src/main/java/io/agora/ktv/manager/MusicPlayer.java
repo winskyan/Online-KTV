@@ -695,6 +695,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
             mSongCode = Long.parseLong(musicModel.getMusicId());
             mMusicModel = musicModel;
             if (0 == mMcc.isPreloaded(mSongCode)) {
+                mSongCode = 123456;
+                mLogger.i("mMcc.getLyric  mSongCode=%s", mSongCode);
                 mGetLrcRequestId = mMcc.getLyric(mSongCode, 0);
             } else {
                 mLogger.i("preload song code=%s", musicModel.getMusicId());

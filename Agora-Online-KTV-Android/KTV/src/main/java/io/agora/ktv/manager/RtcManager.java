@@ -86,15 +86,16 @@ public final class RtcManager {
 //    private final List<String> singers = new ArrayList<>();
     private IMusicContentCenterEventHandler mIMccEventHandler = new IMusicContentCenterEventHandler() {
         @Override
-        public void onPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
-            mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + lyricUrl);
-            mMainThreadDispatch.onMusicPreLoadEvent(songCode, percent, status, msg, lyricUrl);
+        public void onPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
+            mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + lyricUrl + "," + status + ",errorCode=" + errorCode);
+            mMainThreadDispatch.onMusicPreLoadEvent(songCode, percent, lyricUrl, status, errorCode);
+
         }
 
         @Override
-        public void onMusicCollectionResult(String requestId, int status, int page, int pageSize, int total, Music[] list) {
-            mLogger.d("onMusicCollectionResult " + requestId + "," + status + "," + page + "," + pageSize + "," + list);
-            if (0 == status) {
+        public void onMusicCollectionResult(String requestId, int page, int pageSize, int total, Music[] list, int errorCode) {
+            mLogger.d("onMusicCollectionResult " + requestId + "," + errorCode + "," + page + "," + pageSize + "," + list);
+            if (0 == errorCode) {
                 MusicModel[] musics = new MusicModel[list.length];
                 MusicModel music;
                 Music musicItem;
@@ -114,9 +115,9 @@ public final class RtcManager {
         }
 
         @Override
-        public void onMusicChartsResult(String requestId, int status, MusicChartInfo[] list) {
-            mLogger.d("onMusicChartsResult " + requestId + "," + status + "," + list);
-            if (0 == status) {
+        public void onMusicChartsResult(String requestId, MusicChartInfo[] list, int errorCode) {
+            mLogger.d("onMusicChartsResult " + requestId + "," + errorCode + "," + list);
+            if (0 == errorCode) {
                 AgoraMusicCharts[] musicCharts = new AgoraMusicCharts[list.length];
                 AgoraMusicCharts agoraMusicCharts;
                 for (int i = 0; i < list.length; i++) {
@@ -130,8 +131,8 @@ public final class RtcManager {
         }
 
         @Override
-        public void onLyricResult(String requestId, String lyricUrl) {
-            mLogger.d("onLyricResult " + requestId + "," + lyricUrl);
+        public void onLyricResult(String requestId, String lyricUrl, int errorCode) {
+            mLogger.d("onLyricResult " + requestId + "," + lyricUrl + ",errorCode=" + errorCode);
             mMainThreadDispatch.onLyricResult(requestId, lyricUrl);
         }
     };
