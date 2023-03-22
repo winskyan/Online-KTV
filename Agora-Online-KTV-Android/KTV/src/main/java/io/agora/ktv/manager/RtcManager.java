@@ -85,6 +85,7 @@ public final class RtcManager {
      */
 //    private final List<String> singers = new ArrayList<>();
     private IMusicContentCenterEventHandler mIMccEventHandler = new IMusicContentCenterEventHandler() {
+
         @Override
         public void onPreLoadEvent(long songCode, int percent, int status, String msg, String lyricUrl) {
             mLogger.d("onPreLoadEvent " + songCode + "," + percent + "," + status + "," + lyricUrl);

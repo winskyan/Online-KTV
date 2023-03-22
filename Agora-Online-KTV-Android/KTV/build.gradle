@@ -87,7 +87,7 @@ dependencies {
     implementation project(':AgoraDynamicKey')
     implementation project(':lrcview')
     //implementation 'com.github.AgoraIO-Community:LyricsView:1.0.13'
-    implementation 'io.agora.rtc:agora-special-full:4.0.1.5'
+    implementation group: 'io.agora.rtc', name: 'agora-special-full', version: '4.0.0.130'
 
 }
 

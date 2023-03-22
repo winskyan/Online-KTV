@@ -64,7 +64,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
         @Override
         public void onMusicCollectionResult(String requestId, MusicModel[] musics) {
-            mLogger.i("onMusicCollectionResult,musics=" + Arrays.toString(musics));
+            mLogger.i("preload onMusicCollectionResult,musics=" + Arrays.toString(musics));
 
             if (!TextUtils.isEmpty(mMusicCollectionRequestId) && mMusicCollectionRequestId.equals(requestId)) {
                 if (musics.length > 0) {
@@ -208,7 +208,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
             //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE,"{\"songType\":[1,4]}");
             //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE);
             //mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE,"{\"pitchType\":1,\"needLyric\":true}");
-
+            mLogger.i("preload searchMusic");
             mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE);
         }
     }

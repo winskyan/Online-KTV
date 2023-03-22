@@ -127,6 +127,11 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         public void onPreloadEvent(String src, io.agora.mediaplayer.Constants.MediaPlayerPreloadEvent event) {
         }
 
+        @Override
+        public void onCompleted() {
+
+        }
+
 
         @Override
         public void onAgoraCDNTokenWillExpire() {
