@@ -43,7 +43,7 @@ import io.agora.ktv.view.dialog.WaitingDialog;
 import io.agora.ktv.widget.LrcControlView;
 import io.agora.lrcview.LrcLoadUtils;
 import io.agora.lrcview.bean.LrcData;
-import io.agora.rtc.Constants;
+import io.agora.rtc2.Constants;
 import io.reactivex.CompletableObserver;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;

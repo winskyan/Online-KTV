@@ -9,6 +9,10 @@ if (getGradle().getStartParameter().getTaskRequests()
     apply plugin: 'com.google.gms.google-services'
 }
 
+Properties properties = new Properties()
+InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream()
+properties.load(inputStream)
+
 android {
     compileSdkVersion COMPILESDKVERSION
     buildToolsVersion BUILDTOOLSVERSION
@@ -25,6 +29,9 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         multiDexEnabled true
+
+        buildConfigField("String", "APP_ID", "\"${properties.getProperty("APP_ID", "")}\"")
+        buildConfigField("String", "APP_CERTIFICATE", "\"${properties.getProperty("APP_CERTIFICATE", "")}\"")
     }
 
     resourcePrefix "ktv_"
@@ -70,7 +77,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     //Arogra SDK
-//    implementation 'io.agora.rtc:full-sdk:3.5.0.3'
+    implementation 'io.agora.rtc:agora-special-full:4.0.0.227'
 
     implementation 'jp.wasabeef:glide-transformations:4.0.0'
     implementation 'com.google.code.gson:gson:2.8.7'

@@ -1,5 +1,7 @@
 package io.agora.ktv.manager;
 
+import static io.agora.rtc2.Constants.AUDIO_MIXING_STATE_PLAYING;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,10 +27,11 @@ import java.util.Map;
 
 import io.agora.ktv.R;
 import io.agora.ktv.bean.MemberMusicModel;
-import io.agora.rtc.Constants;
-import io.agora.rtc.IRtcEngineEventHandler;
-import io.agora.rtc.RtcEngine;
-import io.agora.rtc.models.DataStreamConfig;
+import io.agora.rtc2.Constants;
+import io.agora.rtc2.DataStreamConfig;
+import io.agora.rtc2.IRtcEngineEventHandler;
+import io.agora.rtc2.RtcEngine;
+
 
 public class MusicPlayer extends IRtcEngineEventHandler {
     private Logger.Builder mLogger = XLog.tag("MusicPlayer");
@@ -204,7 +207,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         MusicPlayer.mMusicModel = mMusicModel;
         mLogger.i("play() called with: mMusicModel = [%s]", mMusicModel);
         onMusicOpening();
-        int ret = mRtcEngine.startAudioMixing(fileMusic.getAbsolutePath(), false, false, 1);
+        //int ret = mRtcEngine.startAudioMixing(fileMusic.getAbsolutePath(), false, 1, 1);
+        int ret = mRtcEngine.startAudioMixing("/sdcard/Download/song/661222.mp4", false, 1, 1);
         mLogger.i("play() called ret= %s", ret);
         return 0;
     }
@@ -251,15 +255,17 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
         mAudioTrackIndex = i;
 
-        if (mMusicModel.getType() == MemberMusicModel.Type.Default) {
-            mRtcEngine.selectAudioTrack(mAudioTrackIndex);
-        } else {
-            if (mAudioTrackIndex == 0) {
-                mRtcEngine.setAudioMixingDualMonoMode(Constants.AudioMixingDualMonoMode.getValue(Constants.AudioMixingDualMonoMode.AUDIO_MIXING_DUAL_MONO_L));
-            } else {
-                mRtcEngine.setAudioMixingDualMonoMode(Constants.AudioMixingDualMonoMode.getValue(Constants.AudioMixingDualMonoMode.AUDIO_MIXING_DUAL_MONO_R));
-            }
-        }
+        Log.i("test", "track count:" + mRtcEngine.getAudioTrackCount() + ",mAudioTrackIndex=" + mAudioTrackIndex);
+
+        //if (mMusicModel.getType() == MemberMusicModel.Type.Default) {
+        mRtcEngine.selectAudioTrack(mAudioTrackIndex);
+//        } else {
+//            if (mAudioTrackIndex == 0) {
+//                mRtcEngine.setAudioMixingDualMonoMode(Constants.AudioMixingDualMonoMode.AUDIO_MIXING_DUAL_MONO_L);
+//            } else {
+//                mRtcEngine.setAudioMixingDualMonoMode(Constants.AudioMixingDualMonoMode.AUDIO_MIXING_DUAL_MONO_R);
+//            }
+//        }
     }
 
     public void seek(long time) {
@@ -339,12 +345,12 @@ public class MusicPlayer extends IRtcEngineEventHandler {
                 mStopSyncLrc = false;
                 while (!mStopSyncLrc) {
                     User user = UserManager.Instance().getUserLiveData().getValue();
-                    if (user==null) return;
-                    if (mStatus == Status.Started && mMusicModel!=null && mMusicModel.getUserId().equals(user.getObjectId())) {
+                    if (user == null) return;
+                    if (mStatus == Status.Started && mMusicModel != null && mMusicModel.getUserId().equals(user.getObjectId())) {
                         mRecvedPlayPosition = mRtcEngine.getAudioMixingCurrentPosition();
                         mLastRecvPlayPosTime = System.currentTimeMillis();
 
-                        sendSyncLrc(mMusicModel.getMusicId(), mRtcEngine.getAudioMixingDuration(), mRecvedPlayPosition,mMusicModel!=null);
+                        sendSyncLrc(mMusicModel.getMusicId(), mRtcEngine.getAudioMixingDuration(), mRecvedPlayPosition, mMusicModel != null);
 
                     }
                     AgoraMember member = RoomManager.Instance(mContext).getMine();
@@ -363,7 +369,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         mSyncLrcThread.setName("Thread-SyncLrc");
         mSyncLrcThread.start();
     }
-    public void sendSyncLrc(String lrcId, long duration, long time,boolean shouldPlay) {
+
+    public void sendSyncLrc(String lrcId, long duration, long time, boolean shouldPlay) {
         Map<String, Object> msg = new HashMap<>();
         msg.put("cmd", "setLrcTime");
         msg.put("lrcId", lrcId);
@@ -374,7 +381,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         mRtcEngine.sendStreamMessage(mStreamId, jsonMsg.toString().getBytes());
     }
 
-    public void sendSyncMember(String userId, AgoraMember.Role role,String avatar) {
+    public void sendSyncMember(String userId, AgoraMember.Role role, String avatar) {
         Map<String, Object> msg = new HashMap<>();
         msg.put("cmd", "syncMember");
         msg.put("userId", userId);
@@ -383,6 +390,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         JSONObject jsonMsg = new JSONObject(msg);
         mRtcEngine.sendStreamMessage(mStreamId, jsonMsg.toString().getBytes());
     }
+
     private void stopSyncLrc() {
         mStopSyncLrc = true;
         if (mSyncLrcThread != null) {
@@ -417,7 +425,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
             if (mStatus.value < Status.Started.value) return;
             String cmd = jsonMsg.getString("cmd");
-            if (cmd.equals("setLrcTime") && mMusicModel!=null) {
+            if (cmd.equals("setLrcTime") && mMusicModel != null) {
                 long position = jsonMsg.getLong("time");
                 if (position == 0) {
                     mHandler.obtainMessage(ACTION_ON_RECEIVED_PLAY, uid).sendToTarget();
@@ -446,17 +454,17 @@ public class MusicPlayer extends IRtcEngineEventHandler {
     public void onAudioMixingStateChanged(int state, int errorCode) {
         super.onAudioMixingStateChanged(state, errorCode);
         mLogger.d("onAudioMixingStateChanged() called with: state = [%s], errorCode = [%s]", state, errorCode);
-        if (state == Constants.MEDIA_ENGINE_AUDIO_EVENT_MIXING_PLAY) {
+        if (state == Constants.AUDIO_MIXING_STATE_PLAYING) {
             if (mStatus == Status.IDLE) {
                 onMusicOpenCompleted();
             }
             onMusicPlaying();
-        } else if (state == Constants.MEDIA_ENGINE_AUDIO_EVENT_MIXING_PAUSED) {
+        } else if (state == Constants.AUDIO_MIXING_STATE_PAUSED) {
             onMusicPause();
-        } else if (state == Constants.MEDIA_ENGINE_AUDIO_EVENT_MIXING_STOPPED) {
+        } else if (state == Constants.AUDIO_MIXING_STATE_STOPPED) {
             onMusicStop();
             onMusicCompleted();
-        } else if (state == Constants.MEDIA_ENGINE_AUDIO_EVENT_MIXING_ERROR) {
+        } else if (state == Constants.WARN_AUDIO_MIXING_OPEN_ERROR) {
             onMusicOpenError(errorCode);
         }
     }

@@ -19,11 +19,12 @@ import com.elvishew.xlog.XLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import io.agora.ktv.BuildConfig;
 import io.agora.ktv.bean.MemberMusicModel;
-import io.agora.rtc.Constants;
-import io.agora.rtc.IRtcEngineEventHandler;
-import io.agora.rtc.RtcEngine;
-import io.agora.rtc.RtcEngineConfig;
+import io.agora.rtc2.Constants;
+import io.agora.rtc2.IRtcEngineEventHandler;
+import io.agora.rtc2.RtcEngine;
+import io.agora.rtc2.RtcEngineConfig;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
@@ -168,9 +169,9 @@ public final class RoomManager {
     }
 
     private void iniRTC() {
-        String appid = mContext.getString(R.string.app_id);
+        String appid = BuildConfig.APP_ID;
         if (TextUtils.isEmpty(appid)) {
-            throw new NullPointerException("please check \"strings_config.xml\"");
+            throw new NullPointerException("please check APP ID");
         }
 
         RtcEngineConfig config = new RtcEngineConfig();
