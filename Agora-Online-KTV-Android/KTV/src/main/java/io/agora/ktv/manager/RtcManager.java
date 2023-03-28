@@ -274,7 +274,7 @@ public final class RtcManager {
         }
     }
 
-    private void iniRTC() {
+    public void iniRTC() {
         RtcEngineConfig config = new RtcEngineConfig();
         config.mContext = mContext;
         config.mAppId = BuildConfig.APP_ID;
@@ -298,7 +298,6 @@ public final class RtcManager {
         }
 
         try {
-            int ret = getRtcEngine().loadExtensionProvider("agora_drm_loader_extension");
             mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
 
             //just for test
@@ -332,6 +331,8 @@ public final class RtcManager {
         mMcc = null;
         mConfig.eventHandler = null;
         mConfig = null;
+//        mRtcEngine.destroy();
+//        mRtcEngine = null;
     }
 
     public RtcEngine getRtcEngine() {

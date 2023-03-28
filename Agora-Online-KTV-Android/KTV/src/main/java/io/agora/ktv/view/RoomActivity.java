@@ -341,6 +341,9 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
     @Override
     protected void iniData() {
+        if (RtcManager.Instance(getApplicationContext()).getRtcEngine() == null) {
+            RtcManager.Instance(getApplicationContext()).iniRTC();
+        }
         RtcManager.Instance(getApplicationContext()).initMcc();
         User mUser = UserManager.Instance().getUserLiveData().getValue();
         if (mUser == null) {
