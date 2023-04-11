@@ -320,6 +320,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }*/
 
         int ret = mAgoraMusicPlayer.open(songCode, 0);
+//        String url = mContext.getExternalCacheDir() + "/东风破-942ad170785a2ec93c72905a65752403.mp3";
+//        int ret = mAgoraMusicPlayer.open(url, 0);
         //int ret = mAgoraMusicPlayer.open("http://agora.fronted.love/yyl.mov",0);
         mLogger.i("open() called ret= %s", ret);
     }
@@ -695,7 +697,6 @@ public class MusicPlayer extends IRtcEngineEventHandler {
             mSongCode = Long.parseLong(musicModel.getMusicId());
             mMusicModel = musicModel;
             if (0 == mMcc.isPreloaded(mSongCode)) {
-                mSongCode = 123456;
                 mLogger.i("mMcc.getLyric  mSongCode=%s", mSongCode);
                 mGetLrcRequestId = mMcc.getLyric(mSongCode, 0);
             } else {
