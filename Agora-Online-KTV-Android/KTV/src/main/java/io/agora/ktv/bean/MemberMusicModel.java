@@ -37,6 +37,8 @@ public class MemberMusicModel implements Parcelable {
     private MusicType musicType = MusicType.MiGu;
     private int type;
 
+    private String jsonOption;
+
     public MemberMusicModel(String musicId) {
         this.musicId = musicId;
     }
@@ -63,6 +65,7 @@ public class MemberMusicModel implements Parcelable {
         musicType = (MusicType) in.readSerializable();
         userId = in.readString();
         type = in.readInt();
+        jsonOption = in.readString();
     }
 
     @Override
@@ -80,6 +83,7 @@ public class MemberMusicModel implements Parcelable {
         dest.writeSerializable(musicType);
         dest.writeString(userId);
         dest.writeInt(type);
+        dest.writeString(jsonOption);
     }
 
     @Override
@@ -203,6 +207,14 @@ public class MemberMusicModel implements Parcelable {
         this.type = type;
     }
 
+    public String getJsonOption() {
+        return jsonOption;
+    }
+
+    public void setJsonOption(String jsonOption) {
+        this.jsonOption = jsonOption;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -239,6 +251,7 @@ public class MemberMusicModel implements Parcelable {
                 ", fileLrc=" + fileLrc +
                 ", musicType=" + musicType +
                 ", type=" + type +
+                ", jsonOption=" + jsonOption +
                 '}';
     }
 }

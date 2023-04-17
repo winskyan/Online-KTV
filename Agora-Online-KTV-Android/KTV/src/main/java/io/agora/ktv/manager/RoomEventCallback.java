@@ -89,7 +89,7 @@ public interface RoomEventCallback {
 
     }
 
-    default void onMusicPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
+    default void onMusicPreLoadEvent(long songCode, String jsonOption, int percent, String lyricUrl, int status, int errorCode) {
 
     }
 

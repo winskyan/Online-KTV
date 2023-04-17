@@ -67,7 +67,7 @@ import jp.wasabeef.glide.transformations.BlurTransformation;
  */
 public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> implements View.OnClickListener, OnItemClickListener<AgoraMember> {
     public static final String TAG_ROOM = "room";
-    private final Logger.Builder mLogger = XLog.tag("RoomManager");
+    private final Logger.Builder mLogger = XLog.tag("[MCC]-RoomManager");
 
     private RoomSpeakerAdapter mRoomSpeakerAdapter;
     private MusicPlayer mMusicPlayer;
@@ -174,7 +174,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-            //music.setMusicId("6599297803980740");
+            music.setMusicId("6625526662555910");
+            //music.setJsonOption("{\"format\":{\"highPart\":0}}");
 
             mMusicQueue.offer(music);
             mLogger.i("music select queue size=" + mMusicQueue.size() + ",songs=" + mMusicQueue);
@@ -187,7 +188,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             if (6654550124639860L == songCode || 6654550108005550L == songCode || 6654550119359930L == songCode) {
                 return;
             }
-            if (!mMusicPlayer.isPreload(songCode)) {
+
+            if (!mMusicPlayer.isPreload(songCode, music.getJsonOption())) {
                 mLogger.i("songs.size=" + songs.size() + ",preload=" + preloadSongs.size());
                 if (preloadSongs.size() < 10) {
                     preloadSongs.put(songCode, music);
@@ -201,6 +203,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                     songs.put(Long.parseLong(music.getMusicId()), music);
                 }
             } else {
+                mLogger.i("song code is not preloaded");
                 if (!mMusicPlayer.isPlaying()) {
                     // 先停止 再播放下一曲
                     emptyMusic();
@@ -216,10 +219,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         @Override
-        public void onMusicPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
+        public void onMusicPreLoadEvent(long songCode, String jsonOption, int percent, String lyricUrl, int status, int errorCode) {
             if (errorCode == 0) {
                 if (percent == 100) {
-                    loadLrc(songCode, lyricUrl);
+                    loadLrc(songCode, lyricUrl, jsonOption);
 
                     preloadSongs.remove(songCode);
 
@@ -251,7 +254,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             Log.i(TAG_ROOM, "onLyricResult requestId=" + requestId + ",lyricUrl");
             if (requestId.equals(mMusicPlayer.getLrcRequestId())) {
                 try {
-                    loadLrc(Long.parseLong(mMusicPlayer.getMusicModel().getMusicId()), lyricUrl);
+                    loadLrc(Long.parseLong(mMusicPlayer.getMusicModel().getMusicId()), lyricUrl, mMusicPlayer.getMusicModel().getJsonOption());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -433,8 +436,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         mMusicPlayer.preloadMusic(musicModel);
     }
 
-    private void loadLrc(final long songCode, final String lyricUrl) {
-        mLogger.d("loadLrc songCode=[%s], lrcUrl=[%s]", songCode, lyricUrl);
+    private void loadLrc(final long songCode, final String lyricUrl, final String jsonOption) {
+        mLogger.d("loadLrc songCode=[%s], lrcUrl=[%s], jsonOption=[%s]", songCode, lyricUrl, jsonOption);
         if (-1 == songCode || TextUtils.isEmpty(lyricUrl) || null == mMusicPlayer) {
             mLogger.e("loadLrc song code or lyricUrl error");
             return;
@@ -463,7 +466,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                             mMusicCallback.onResourceReady(musicModel);
 
                             if (!onlyLrc) {
-                                mMusicPlayer.openMusic(songCode);
+                                mMusicPlayer.openMusic(songCode, jsonOption);
                             } else {
                                 mMusicPlayer.playByListener(musicModel);
                             }
