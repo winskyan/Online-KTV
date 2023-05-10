@@ -114,7 +114,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
             @Override
             public void onClick(View v) {
                 mDataBinding.etSearchKey.setText("");
-                mMusicChartsRequestId = mMcc.getMusicCharts();
+                //mMusicChartsRequestId = mMcc.getMusicCharts();
             }
         });
 
@@ -154,7 +154,7 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
         mDataBinding.llEmpty.setVisibility(View.GONE);
 
         mMcc = RtcManager.Instance(requireContext()).getAgoraMusicContentCenter();
-        loadMusics(null);
+        //loadMusics(null);
     }
 
     private void loadMusics(String searchKey) {
@@ -180,6 +180,29 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
 
     @Override
     public void onItemClick(@NonNull MusicModel data, View view, int position, long id) {
+        playMusic(data);
+        //KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
+        //requireActivity().onBackPressed();
+
+    }
+
+    private void searchMusic() {
+        if (!TextUtils.isEmpty(mDataBinding.etSearchKey.getText().toString())) {
+            //默认搜索前十首歌曲
+            //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE,"{\"songType\":[1,4]}");
+            //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE);
+            //mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE,"{\"pitchType\":1,\"needLyric\":true}");
+            mLogger.i("onMusicCollectionResult,preload searchMusic");
+            //mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE);
+
+            MusicModel model = new MusicModel();
+            model.setMusicId(mDataBinding.etSearchKey.getText().toString());
+            model.setType(4);
+            playMusic(model);
+        }
+    }
+
+    private void playMusic(MusicModel data) {
         AgoraRoom mRoom = RtcManager.Instance(requireContext()).getRoom();
         if (mRoom == null) {
             return;
@@ -198,20 +221,6 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
         model.setType(data.getType());
 
         RtcManager.Instance(requireContext()).onMusicChanged(model);
-        //KeyBoardUtils.closeKeyboard(mDataBinding.etSearchKey, getContext());
-        //requireActivity().onBackPressed();
-
-    }
-
-    private void searchMusic() {
-        if (!TextUtils.isEmpty(mDataBinding.etSearchKey.getText().toString())) {
-            //默认搜索前十首歌曲
-            //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE,"{\"songType\":[1,4]}");
-            //mMusicCollectionRequestId = mMcc.searchMusic("\u7a97", 1, MUSIC_PAGE_SIZE);
-            //mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE,"{\"pitchType\":1,\"needLyric\":true}");
-            mLogger.i("onMusicCollectionResult,preload searchMusic");
-            mMusicCollectionRequestId = mMcc.searchMusic(mDataBinding.etSearchKey.getText().toString(), 0, MUSIC_PAGE_SIZE);
-        }
     }
 
 }

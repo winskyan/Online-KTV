@@ -180,7 +180,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-            music.setMusicId("6625526662555910");
+            //music.setMusicId("6625526662555910");
             //music.setJsonOption("{\"format\":{\"highPart\":0}}");
 
             mMusicQueue.offer(music);
@@ -191,30 +191,29 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             if (songs.containsKey(songCode) || preloadSongs.containsKey(songCode)) {
                 return;
             }
-            if (6654550124639860L == songCode || 6654550108005550L == songCode || 6654550119359930L == songCode) {
-                return;
-            }
 
-            if (!mMusicPlayer.isPreload(songCode)) {
-                mLogger.i("songs.size=" + songs.size() + ",preload=" + preloadSongs.size());
-                if (preloadSongs.size() < 10) {
-                    preloadSongs.put(songCode, music);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            prepareMusic(music);
-                        }
-                    });
-                } else {
-                    songs.put(Long.parseLong(music.getMusicId()), music);
-                }
-            } else {
-                mLogger.i("song code is not preloaded");
-                if (!mMusicPlayer.isPlaying()) {
-                    // 先停止 再播放下一曲
-                    emptyMusic();
-                }
-            }
+            emptyMusic();
+
+//            if (!mMusicPlayer.isPreload(songCode)) {
+//                mLogger.i("songs.size=" + songs.size() + ",preload=" + preloadSongs.size());
+//                if (preloadSongs.size() < 10) {
+//                    preloadSongs.put(songCode, music);
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            prepareMusic(music);
+//                        }
+//                    });
+//                } else {
+//                    songs.put(Long.parseLong(music.getMusicId()), music);
+//                }
+//            } else {
+//                mLogger.i("song code is not preloaded");
+//                if (!mMusicPlayer.isPlaying()) {
+//                    // 先停止 再播放下一曲
+//                    emptyMusic();
+//                }
+//            }
         }
 
         @Override
