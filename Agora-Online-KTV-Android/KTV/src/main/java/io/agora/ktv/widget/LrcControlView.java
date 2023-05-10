@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 
 import androidx.annotation.DrawableRes;
@@ -15,9 +17,9 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.palette.graphics.Palette;
 
-import com.google.android.material.slider.Slider;
 import com.jaygoo.widget.OnRangeChangedListener;
 import com.jaygoo.widget.RangeSeekBar;
+
 
 import io.agora.ktv.R;
 import io.agora.ktv.bean.MemberMusicModel;
@@ -57,6 +59,8 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
     private OnLrcActionListener mOnLrcActionListener;
     private OnPitchViewSingScoreListener mOnPitchViewSingScoreListener;
 
+    private OnSpeedItemSelectedListener mOnSpeedItemSelectedListener;
+
     public LrcControlView(@NonNull Context context) {
         super(context);
         init(context);
@@ -79,6 +83,30 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
         mDataBinding.ilActive.getRoot().setVisibility(View.GONE);
 
         initListener();
+
+        String[] speedArrayValue = context.getResources().getStringArray(R.array.ktv_song_play_speed_array);
+        ArrayAdapter<String> speedAdapter = new ArrayAdapter<String>(context, R.layout.ktv_speed_spinner, speedArrayValue);
+        speedAdapter.setDropDownViewResource(R.layout.ktv_spinner_dropdown_stytle);
+        mDataBinding.ilActive.speed.setAdapter(speedAdapter);
+        mDataBinding.ilActive.speed.setSelection(1);
+
+        mDataBinding.ilActive.speed.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (null != mOnSpeedItemSelectedListener) {
+                    try {
+                        mOnSpeedItemSelectedListener.onSpeedItemSelected((int) (Float.parseFloat(speedArrayValue[position]) * 100));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     private void initListener() {
@@ -100,6 +128,10 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
 
     public void setSongProgressSliderListener(OnRangeChangedListener onChangeListener) {
         mDataBinding.ilActive.songProgress.setOnRangeChangedListener(onChangeListener);
+    }
+
+    public void setSpeedItemSelectedListener(OnSpeedItemSelectedListener onSpeedItemSelectedListener) {
+        this.mOnSpeedItemSelectedListener = onSpeedItemSelectedListener;
     }
 
     public void onPrepareStatus() {
@@ -210,5 +242,9 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
 
     public interface OnPitchViewSingScoreListener extends PitchView.OnSingScoreListener {
 
+    }
+
+    public interface OnSpeedItemSelectedListener {
+        void onSpeedItemSelected(int speed);
     }
 }

@@ -371,6 +371,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         mAgoraMusicPlayer.seek(time);
     }
 
+    public void setPlaybackSpeed(int speed) {
+        mAgoraMusicPlayer.setPlaybackSpeed(speed);
+    }
+
     public boolean hasAccompaniment() {
         return true;
     }
