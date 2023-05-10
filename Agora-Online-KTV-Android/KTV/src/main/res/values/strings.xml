@@ -56,4 +56,5 @@
     <string name="ktv_music_menu_dialog_vol1">Vocal volume</string>
     <string name="ktv_music_menu_dialog_vol2">Music volume</string>
     <string name="ktv_cannot_choose_song">Cannot order songs while others are singing!</string>
+    <string name="ktv_speed_label">Speed</string>
 </resources>

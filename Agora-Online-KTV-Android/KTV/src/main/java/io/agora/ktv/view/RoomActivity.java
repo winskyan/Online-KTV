@@ -377,6 +377,13 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
             }
         });
+
+        mDataBinding.lrcControlView.setSpeedItemSelectedListener(new LrcControlView.OnSpeedItemSelectedListener() {
+            @Override
+            public void onSpeedItemSelected(int speed) {
+                mMusicPlayer.setPlaybackSpeed(speed);
+            }
+        });
     }
 
     @Override

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_spinner_style"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="@drawable/ktv_shape_room_irc_menu_background"
+    android:gravity="center"
+    android:singleLine="true"
+    android:textColor="#9BA2AB"
+    android:textSize="15sp" />
