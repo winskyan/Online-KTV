@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources translatable="false">
-    <string name="ktv_app_name">KTV</string>
+    <string name="ktv_app_name">KTV物料工具</string>
 
     <string name="ktv_ok">好的</string>
     <string name="ktv_done">完成</string>

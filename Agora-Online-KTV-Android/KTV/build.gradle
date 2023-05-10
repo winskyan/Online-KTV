@@ -19,12 +19,12 @@ android {
 
     defaultConfig {
         if (isModule.toBoolean()) {
-            applicationId "io.agora.ktv"
+            applicationId "io.agora.ktv.material_tools"
         }
         minSdkVersion MINSDKVERSION
         targetSdkVersion TARGETSDKVERSION
         versionCode 9
-        versionName "4.0.0"
+        versionName "4112.0510.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -69,7 +69,7 @@ android {
     if (isModule.toBoolean()) {
         applicationVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "KTV-${versionName}-${variant.buildType.name}-local-${releaseTime()}.apk"
+                outputFileName = "KTV-Material-Tools-${versionName}-${variant.buildType.name}-local-${releaseTime()}.apk"
             }
         }
     }
@@ -94,5 +94,5 @@ dependencies {
 }
 
 static def releaseTime() {
-    return new Date().format("yyyyMMddHHmmss", TimeZone.getTimeZone("UTC"))
+    return new Date().format("yyyyMMddHHmmss")
 }
