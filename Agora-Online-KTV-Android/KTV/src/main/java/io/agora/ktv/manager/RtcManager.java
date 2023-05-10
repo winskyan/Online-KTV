@@ -86,10 +86,9 @@ public final class RtcManager {
 //    private final List<String> singers = new ArrayList<>();
     private IMusicContentCenterEventHandler mIMccEventHandler = new IMusicContentCenterEventHandler() {
         @Override
-        public void onPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
-            mLogger.d("onPreLoadEvent " + songCode +   "," + percent + "," + lyricUrl + "," + status + ",errorCode=" + errorCode);
-            mMainThreadDispatch.onMusicPreLoadEvent(songCode, percent, lyricUrl, status, errorCode);
-
+        public void onPreLoadEvent(String requestId, long songCode, int percent, String lyricUrl, int status, int errorCode) {
+            mLogger.d("onPreLoadEvent " + requestId + "," + songCode + "," + percent + "," + lyricUrl + "," + status + ",errorCode=" + errorCode);
+            mMainThreadDispatch.onMusicPreLoadEvent(requestId, songCode, percent, lyricUrl, status, errorCode);
         }
 
         @Override
@@ -131,9 +130,14 @@ public final class RtcManager {
         }
 
         @Override
-        public void onLyricResult(String requestId, String lyricUrl, int errorCode) {
+        public void onLyricResult(String requestId, long songCode, String lyricUrl, int errorCode) {
             mLogger.d("onLyricResult " + requestId + "," + lyricUrl + ",errorCode=" + errorCode);
-            mMainThreadDispatch.onLyricResult(requestId, lyricUrl);
+            mMainThreadDispatch.onLyricResult(requestId, songCode,lyricUrl);
+        }
+
+        @Override
+        public void onSongSimpleInfoResult(String requestId, long songCode, String simpleInfo, int errorCode) {
+            mLogger.d("onSongSimpleInfoResult " + requestId + "," + songCode + ",simple Info=" + simpleInfo + ",errorCode=" + errorCode);
         }
     };
 

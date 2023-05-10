@@ -138,20 +138,22 @@ public class MainThreadDispatch implements RoomEventCallback {
                 }
             } else if (msg.what == ON_MUSIC_PRELOAD_EVENT) {
                 Bundle bundle = msg.getData();
+                String requestId = bundle.getString("requestId");
                 long songCode = bundle.getLong("songCode");
                 int percent = bundle.getInt("percent");
                 String lyricUrl = bundle.getString("lyricUrl");
                 int status = bundle.getInt("status");
                 int errorCode = bundle.getInt("errorCode");
                 for (RoomEventCallback callback : eventCallbacks) {
-                    callback.onMusicPreLoadEvent(songCode, percent, lyricUrl, status, errorCode);
+                    callback.onMusicPreLoadEvent(requestId, songCode, percent, lyricUrl, status, errorCode);
                 }
             } else if (msg.what == ON_LYRIC_RESULT) {
                 Bundle bundle = msg.getData();
                 String requestId = bundle.getString("requestId");
+                long songCode = bundle.getLong("songCode");
                 String lyricUrl = bundle.getString("lyricUrl");
                 for (RoomEventCallback callback : eventCallbacks) {
-                    callback.onLyricResult(requestId, lyricUrl);
+                    callback.onLyricResult(requestId, songCode,lyricUrl);
                 }
             }
             return false;
@@ -281,10 +283,11 @@ public class MainThreadDispatch implements RoomEventCallback {
     }
 
     @Override
-    public void onMusicPreLoadEvent(long songCode,  int percent, String lyricUrl, int status, int errorCode) {
+    public void onMusicPreLoadEvent(String requestId, long songCode, int percent, String lyricUrl, int status, int errorCode) {
         mLogger.d("onMusicPreLoadEvent() called with: songCode = [%s],lyricUrl=[%s]", songCode, lyricUrl);
 
         Bundle bundle = new Bundle();
+        bundle.putString("requestId", requestId);
         bundle.putLong("songCode", songCode);
 
         bundle.putInt("percent", percent);
@@ -298,11 +301,12 @@ public class MainThreadDispatch implements RoomEventCallback {
     }
 
     @Override
-    public void onLyricResult(String requestId, String lyricUrl) {
+    public void onLyricResult(String requestId, long songCode,String lyricUrl) {
         mLogger.d("onLyricResult() called with: requestId = [%s],lyricUrl=[%s]", requestId, lyricUrl);
 
         Bundle bundle = new Bundle();
         bundle.putString("requestId", requestId);
+        bundle.putLong("songCode", songCode);
         bundle.putString("lyricUrl", lyricUrl);
 
         Message message = mHandler.obtainMessage(ON_LYRIC_RESULT);

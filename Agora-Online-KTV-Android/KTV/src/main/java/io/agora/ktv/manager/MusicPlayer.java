@@ -738,6 +738,14 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         return mAgoraMusicPlayer.getPlaySrc();
     }
 
+    public long getInternalSongCode(long songCode, String jsonOption) {
+        return mMcc.getInternalSongCode(songCode, jsonOption);
+    }
+
+    public String getSongSimpleInfo(long songCode) {
+        return mMcc.getSongSimpleInfo(songCode);
+    }
+
     @MainThread
     public interface Callback {
         /**

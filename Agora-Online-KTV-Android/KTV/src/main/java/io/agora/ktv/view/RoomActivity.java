@@ -180,8 +180,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-            music.setMusicId("6625526662555910");
+            long newSongCode = mMusicPlayer.getInternalSongCode(6625526662555910L, "{\"format\":{\"highPart\":0}}");
+            music.setMusicId(String.valueOf(newSongCode));
             //music.setJsonOption("{\"format\":{\"highPart\":0}}");
+            mMusicPlayer.getSongSimpleInfo(newSongCode);
 
             mMusicQueue.offer(music);
             mLogger.i("music select queue size=" + mMusicQueue.size() + ",songs=" + mMusicQueue);
@@ -225,7 +227,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         @Override
-        public void onMusicPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
+        public void onMusicPreLoadEvent(String requestId, long songCode, int percent, String lyricUrl, int status, int errorCode) {
             if (errorCode == 0) {
                 if (percent == 100) {
                     loadLrc(songCode, lyricUrl);
@@ -256,7 +258,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         @Override
-        public void onLyricResult(String requestId, String lyricUrl) {
+        public void onLyricResult(String requestId, long songCode, String lyricUrl) {
             Log.i(TAG_ROOM, "onLyricResult requestId=" + requestId + ",lyricUrl");
             if (requestId.equals(mMusicPlayer.getLrcRequestId())) {
                 try {
