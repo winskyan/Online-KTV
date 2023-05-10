@@ -139,13 +139,12 @@ public class MainThreadDispatch implements RoomEventCallback {
             } else if (msg.what == ON_MUSIC_PRELOAD_EVENT) {
                 Bundle bundle = msg.getData();
                 long songCode = bundle.getLong("songCode");
-                String jsonOption = bundle.getString("jsonOption");
                 int percent = bundle.getInt("percent");
                 String lyricUrl = bundle.getString("lyricUrl");
                 int status = bundle.getInt("status");
                 int errorCode = bundle.getInt("errorCode");
                 for (RoomEventCallback callback : eventCallbacks) {
-                    callback.onMusicPreLoadEvent(songCode, jsonOption, percent, lyricUrl, status, errorCode);
+                    callback.onMusicPreLoadEvent(songCode, percent, lyricUrl, status, errorCode);
                 }
             } else if (msg.what == ON_LYRIC_RESULT) {
                 Bundle bundle = msg.getData();
@@ -282,12 +281,12 @@ public class MainThreadDispatch implements RoomEventCallback {
     }
 
     @Override
-    public void onMusicPreLoadEvent(long songCode, String jsonOption, int percent, String lyricUrl, int status, int errorCode) {
+    public void onMusicPreLoadEvent(long songCode,  int percent, String lyricUrl, int status, int errorCode) {
         mLogger.d("onMusicPreLoadEvent() called with: songCode = [%s],lyricUrl=[%s]", songCode, lyricUrl);
 
         Bundle bundle = new Bundle();
         bundle.putLong("songCode", songCode);
-        bundle.putString("jsonOption", jsonOption);
+
         bundle.putInt("percent", percent);
         bundle.putString("lyricUrl", lyricUrl);
         bundle.putInt("status", status);

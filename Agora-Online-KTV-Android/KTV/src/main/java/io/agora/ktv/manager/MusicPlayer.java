@@ -304,7 +304,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         return 0;
     }
 
-    public void openMusic(long songCode, String jsonOption) {
+    public void openMusic(long songCode) {
         if (songCode != mSongCode) {
             mLogger.e("play: not same song, abort playing");
             return;
@@ -320,7 +320,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }*/
 
         //int ret = mAgoraMusicPlayer.open(songCode,9);
-        int ret = mAgoraMusicPlayer.open(songCode, 0, jsonOption);
+        int ret = mAgoraMusicPlayer.open(songCode, 0);
 //        String url = mContext.getExternalCacheDir() + "/东风破-942ad170785a2ec93c72905a65752403.mp3";
 //        int ret = mAgoraMusicPlayer.open(url, 0);
         //int ret = mAgoraMusicPlayer.open("http://agora.fronted.love/yyl.mov",0);
@@ -697,7 +697,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         try {
             mSongCode = Long.parseLong(musicModel.getMusicId());
             mMusicModel = musicModel;
-            if (0 == mMcc.isPreloaded(mSongCode, musicModel.getJsonOption())) {
+            if (0 == mMcc.isPreloaded(mSongCode)) {
                 mLogger.i("mMcc.getLyric  mSongCode=%s", mSongCode);
                 mGetLrcRequestId = mMcc.getLyric(mSongCode, 0);
             } else {
@@ -710,12 +710,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }
     }
 
-    public boolean isPreload(long songCode, String jsonOption) {
-        return 0 == mMcc.isPreloaded(songCode, jsonOption);
-    }
-
-    public boolean removeCache(long songCode, String jsonOption) {
-        return 0 == mMcc.removeCache(songCode, jsonOption);
+    public boolean isPreload(long songCode) {
+        return 0 == mMcc.isPreloaded(songCode);
     }
 
     public MemberMusicModel getMusicModel() {

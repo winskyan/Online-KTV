@@ -189,7 +189,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                 return;
             }
 
-            if (!mMusicPlayer.isPreload(songCode, music.getJsonOption())) {
+            if (!mMusicPlayer.isPreload(songCode)) {
                 mLogger.i("songs.size=" + songs.size() + ",preload=" + preloadSongs.size());
                 if (preloadSongs.size() < 10) {
                     preloadSongs.put(songCode, music);
@@ -219,10 +219,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         }
 
         @Override
-        public void onMusicPreLoadEvent(long songCode, String jsonOption, int percent, String lyricUrl, int status, int errorCode) {
+        public void onMusicPreLoadEvent(long songCode, int percent, String lyricUrl, int status, int errorCode) {
             if (errorCode == 0) {
                 if (percent == 100) {
-                    loadLrc(songCode, lyricUrl, jsonOption);
+                    loadLrc(songCode, lyricUrl);
 
                     preloadSongs.remove(songCode);
 
@@ -254,7 +254,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             Log.i(TAG_ROOM, "onLyricResult requestId=" + requestId + ",lyricUrl");
             if (requestId.equals(mMusicPlayer.getLrcRequestId())) {
                 try {
-                    loadLrc(Long.parseLong(mMusicPlayer.getMusicModel().getMusicId()), lyricUrl, mMusicPlayer.getMusicModel().getJsonOption());
+                    loadLrc(Long.parseLong(mMusicPlayer.getMusicModel().getMusicId()), lyricUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -436,8 +436,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         mMusicPlayer.preloadMusic(musicModel);
     }
 
-    private void loadLrc(final long songCode, final String lyricUrl, final String jsonOption) {
-        mLogger.d("loadLrc songCode=[%s], lrcUrl=[%s], jsonOption=[%s]", songCode, lyricUrl, jsonOption);
+    private void loadLrc(final long songCode, final String lyricUrl) {
+        mLogger.d("loadLrc songCode=[%s], lrcUrl=[%s]", songCode, lyricUrl);
         if (-1 == songCode || TextUtils.isEmpty(lyricUrl) || null == mMusicPlayer) {
             mLogger.e("loadLrc song code or lyricUrl error");
             return;
@@ -466,7 +466,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
                             mMusicCallback.onResourceReady(musicModel);
 
                             if (!onlyLrc) {
-                                mMusicPlayer.openMusic(songCode, jsonOption);
+                                mMusicPlayer.openMusic(songCode);
                             } else {
                                 mMusicPlayer.playByListener(musicModel);
                             }
