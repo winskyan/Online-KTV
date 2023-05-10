@@ -15,6 +15,10 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.palette.graphics.Palette;
 
+import com.google.android.material.slider.Slider;
+import com.jaygoo.widget.OnRangeChangedListener;
+import com.jaygoo.widget.RangeSeekBar;
+
 import io.agora.ktv.R;
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvLayoutLrcControlViewBinding;
@@ -37,6 +41,10 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
 
     public PitchView getPitchView() {
         return mDataBinding.ilActive.pitchView;
+    }
+
+    public RangeSeekBar getSongSlider() {
+        return mDataBinding.ilActive.songProgress;
     }
 
 
@@ -88,6 +96,10 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
     public void setOnPitchViewSingScoreListener(OnPitchViewSingScoreListener onPitchViewSingScoreListener) {
         this.mOnPitchViewSingScoreListener = onPitchViewSingScoreListener;
         mDataBinding.ilActive.pitchView.setSingScoreListener(this.mOnPitchViewSingScoreListener);
+    }
+
+    public void setSongProgressSliderListener(OnRangeChangedListener onChangeListener) {
+        mDataBinding.ilActive.songProgress.setOnRangeChangedListener(onChangeListener);
     }
 
     public void onPrepareStatus() {

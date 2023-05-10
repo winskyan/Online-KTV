@@ -1,5 +1,6 @@
 package io.agora.ktv.view;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,6 +25,9 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
+import com.google.android.material.slider.Slider;
+import com.jaygoo.widget.OnRangeChangedListener;
+import com.jaygoo.widget.RangeSeekBar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -97,6 +101,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         @Override
         public void onMusicOpenCompleted(long duration) {
             mDataBinding.lrcControlView.getLrcView().setTotalDuration(duration);
+            mDataBinding.lrcControlView.getSongSlider().setRange(0f, duration);
         }
 
         @Override
@@ -139,6 +144,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         public void onMusicPositionChanged(long position) {
             mDataBinding.lrcControlView.getLrcView().updateTime(position);
             mDataBinding.lrcControlView.getPitchView().updateTime(position);
+            mDataBinding.lrcControlView.getSongSlider().setProgress(position);
         }
     };
 
@@ -341,15 +347,34 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             }
         });
 
-        mDataBinding.lrcControlView.setOnPitchViewSingScoreListener(new LrcControlView.OnPitchViewSingScoreListener(){
+        mDataBinding.lrcControlView.setOnPitchViewSingScoreListener(new LrcControlView.OnPitchViewSingScoreListener() {
 
             @Override
             public void onOriginalPitch(float pitch, int totalCount) {
-                
+
             }
 
             @Override
             public void onScore(double score, double cumulativeScore, double totalScore) {
+
+            }
+        });
+
+        mDataBinding.lrcControlView.setSongProgressSliderListener(new OnRangeChangedListener() {
+            @Override
+            public void onRangeChanged(RangeSeekBar view, float leftValue, float rightValue, boolean isFromUser) {
+                if (isFromUser) {
+                    mMusicPlayer.seek((long) leftValue);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(RangeSeekBar view, boolean isLeft) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(RangeSeekBar view, boolean isLeft) {
 
             }
         });
@@ -682,6 +707,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             }
         }
         mDataBinding.lrcControlView.getLrcView().reset();
+        mDataBinding.lrcControlView.getSongSlider().setProgress(0f);
         mDataBinding.lrcControlView.onIdleStatus();
     }
 

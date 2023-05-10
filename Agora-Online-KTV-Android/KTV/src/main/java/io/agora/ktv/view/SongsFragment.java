@@ -57,7 +57,8 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
             if (!TextUtils.isEmpty(mMusicChartsRequestId) && mMusicChartsRequestId.equals(requestId)) {
                 //加载第一个排行榜
                 if (musicCharts.length > 0) {
-                    loadMusicsByChartId(musicCharts[0].type);
+                    //fix here
+                    loadMusicsByChartId(2);
                 }
             }
         }

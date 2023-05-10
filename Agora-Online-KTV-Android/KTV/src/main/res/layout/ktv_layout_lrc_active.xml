@@ -14,7 +14,7 @@
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
             android:paddingBottom="20dp"
-            app:layout_constraintBottom_toTopOf="@+id/rlMusicControlMenu"
+            app:layout_constraintBottom_toTopOf="@+id/song_progress"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pitchView"
@@ -35,8 +35,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:pitchDoneTextColor="@color/ktv_lrc_highligh"
-             />
+            app:pitchDoneTextColor="@color/ktv_lrc_highligh" />
+
+        <com.jaygoo.widget.RangeSeekBar
+            android:id="@+id/song_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stepSize="1"
+            android:valueFrom="0f"
+            android:valueTo="100f"
+            app:labelBehavior="withinBounds"
+            app:layout_constraintBottom_toTopOf="@+id/rlMusicControlMenu"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:rsb_indicator_show_mode="alwaysShow"
+            app:rsb_mode="single" />
 
         <RelativeLayout
             android:id="@+id/rlMusicControlMenu"
