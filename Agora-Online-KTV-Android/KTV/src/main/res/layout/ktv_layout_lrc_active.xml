@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <io.agora.lrcview.LrcView
+        <io.agora.lyrics_view.LrcView
             android:id="@+id/lrcView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -26,7 +26,7 @@
             app:lrcTextGravity="center"
             app:lrcTextSize="26sp" />
 
-        <io.agora.lrcview.PitchView
+        <io.agora.lyrics_view.PitchView
             android:id="@+id/pitchView"
             android:layout_width="0dp"
             android:layout_height="60dp"
@@ -36,7 +36,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pitchDoneTextColor="@color/ktv_lrc_highligh"
-            app:pitchNormalTextColor="@color/ktv_pitch_nomal" />
+             />
 
         <RelativeLayout
             android:id="@+id/rlMusicControlMenu"

@@ -51,8 +51,8 @@ import io.agora.ktv.view.dialog.RoomChooseSongDialog;
 import io.agora.ktv.view.dialog.RoomMVDialog;
 import io.agora.ktv.view.dialog.WaitingDialog;
 import io.agora.ktv.widget.LrcControlView;
-import io.agora.lrcview.LrcLoadUtils;
-import io.agora.lrcview.bean.LrcData;
+import io.agora.lyrics_view.LrcLoadUtils;
+import io.agora.lyrics_view.bean.LrcData;
 import io.agora.rtc2.Constants;
 import io.reactivex.CompletableObserver;
 import io.reactivex.SingleObserver;
@@ -338,6 +338,19 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             @Override
             public void onChangeMusicClick() {
                 showChangeMusicDialog();
+            }
+        });
+
+        mDataBinding.lrcControlView.setOnPitchViewSingScoreListener(new LrcControlView.OnPitchViewSingScoreListener(){
+
+            @Override
+            public void onOriginalPitch(float pitch, int totalCount) {
+                
+            }
+
+            @Override
+            public void onScore(double score, double cumulativeScore, double totalScore) {
+
             }
         });
     }

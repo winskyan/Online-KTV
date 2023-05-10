@@ -18,8 +18,8 @@ import androidx.palette.graphics.Palette;
 import io.agora.ktv.R;
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.ktv.databinding.KtvLayoutLrcControlViewBinding;
-import io.agora.lrcview.LrcView;
-import io.agora.lrcview.PitchView;
+import io.agora.lyrics_view.LrcView;
+import io.agora.lyrics_view.PitchView;
 
 /**
  * 歌词控制View
@@ -47,6 +47,7 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
     private Role mRole = Role.Listener;
     private MemberMusicModel mMusic;
     private OnLrcActionListener mOnLrcActionListener;
+    private OnPitchViewSingScoreListener mOnPitchViewSingScoreListener;
 
     public LrcControlView(@NonNull Context context) {
         super(context);
@@ -81,7 +82,12 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
 
     public void setOnLrcClickListener(OnLrcActionListener mOnLrcActionListener) {
         this.mOnLrcActionListener = mOnLrcActionListener;
-        mDataBinding.ilActive.lrcView.setActionListener(this.mOnLrcActionListener);
+        mDataBinding.ilActive.lrcView.setSeekListener(this.mOnLrcActionListener);
+    }
+
+    public void setOnPitchViewSingScoreListener(OnPitchViewSingScoreListener onPitchViewSingScoreListener) {
+        this.mOnPitchViewSingScoreListener = onPitchViewSingScoreListener;
+        mDataBinding.ilActive.pitchView.setSingScoreListener(this.mOnPitchViewSingScoreListener);
     }
 
     public void onPrepareStatus() {
@@ -180,7 +186,7 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
         mDataBinding.ilActive.switchOriginal.setChecked(checked);
     }
 
-    public interface OnLrcActionListener extends LrcView.OnActionListener {
+    public interface OnLrcActionListener extends LrcView.OnLyricsSeekListener {
         void onSwitchOriginalClick();
 
         void onMenuClick();
@@ -188,5 +194,9 @@ public class LrcControlView extends FrameLayout implements View.OnClickListener 
         void onPlayClick();
 
         void onChangeMusicClick();
+    }
+
+    public interface OnPitchViewSingScoreListener extends PitchView.OnSingScoreListener {
+
     }
 }
