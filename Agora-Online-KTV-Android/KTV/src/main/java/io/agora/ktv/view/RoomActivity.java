@@ -142,9 +142,11 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicPositionChanged(long position) {
-            mDataBinding.lrcControlView.getLrcView().updateTime(position);
-            mDataBinding.lrcControlView.getPitchView().updateTime(position);
-            mDataBinding.lrcControlView.getSongSlider().setProgress(position);
+            if (mMusicPlayer.isPlaying()) {
+                mDataBinding.lrcControlView.getLrcView().updateTime(position);
+                mDataBinding.lrcControlView.getPitchView().updateTime(position);
+                mDataBinding.lrcControlView.getSongSlider().setProgress(position);
+            }
         }
     };
 
@@ -313,6 +315,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             @Override
             public void onProgressChanged(long time) {
                 mMusicPlayer.seek(time);
+                mDataBinding.lrcControlView.getSongSlider().setProgress(time);
+                mDataBinding.lrcControlView.getPitchView().updateTime(time);
             }
 
             @Override
@@ -364,6 +368,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             public void onRangeChanged(RangeSeekBar view, float leftValue, float rightValue, boolean isFromUser) {
                 if (isFromUser) {
                     mMusicPlayer.seek((long) leftValue);
+                    mDataBinding.lrcControlView.getLrcView().updateTime((long) leftValue);
+                    mDataBinding.lrcControlView.getPitchView().updateTime((long) leftValue);
                 }
             }
 
@@ -721,7 +727,6 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
         if (mMusicPlayer == null) {
             return;
         }
-
         mMusicPlayer.togglePlay();
     }
 
