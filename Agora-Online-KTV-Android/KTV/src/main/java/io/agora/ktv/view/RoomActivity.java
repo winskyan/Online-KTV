@@ -180,10 +180,10 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-            long newSongCode = mMusicPlayer.getInternalSongCode(6625526662555910L, "{\"format\":{\"highPart\":0}}");
-            music.setMusicId(String.valueOf(newSongCode));
+           // long newSongCode = mMusicPlayer.getInternalSongCode(6625526662555910L, "{\"format\":{\"highPart\":0}}");
+            //music.setMusicId(String.valueOf(newSongCode));
             //music.setJsonOption("{\"format\":{\"highPart\":0}}");
-            mMusicPlayer.getSongSimpleInfo(newSongCode);
+            //mMusicPlayer.getSongSimpleInfo(newSongCode);
 
             mMusicQueue.offer(music);
             mLogger.i("music select queue size=" + mMusicQueue.size() + ",songs=" + mMusicQueue);
