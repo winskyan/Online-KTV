@@ -106,7 +106,8 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }
 
         @Override
-        public void onPositionChanged(long position_ms) {
+        public void onPositionChanged(long position_ms, long timestamp_ms) {
+
         }
 
         @Override
@@ -236,11 +237,15 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
     public void unregisterPlayerObserver() {
         this.mCallback = null;
-        mAgoraMusicPlayer.unRegisterPlayerObserver(mMediaPlayerObserver);
+        if (null != mAgoraMusicPlayer) {
+            mAgoraMusicPlayer.unRegisterPlayerObserver(mMediaPlayerObserver);
+        }
     }
 
     private void registerObserver() {
-        mAgoraMusicPlayer.registerPlayerObserver(mMediaPlayerObserver);
+        if (null != mAgoraMusicPlayer) {
+            mAgoraMusicPlayer.registerPlayerObserver(mMediaPlayerObserver);
+        }
     }
 
     public void switchRole(int role) {

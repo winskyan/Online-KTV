@@ -158,7 +158,9 @@ public class SongsFragment extends DataBindBaseFragment<KtvFragmentSongListBindi
     }
 
     private void loadMusics(String searchKey) {
-        mMusicChartsRequestId = mMcc.getMusicCharts();
+        if (null != mMcc) {
+            mMusicChartsRequestId = mMcc.getMusicCharts();
+        }
     }
 
     private void loadMusicsByChartId(int musicChartId) {

@@ -132,7 +132,7 @@ public final class RtcManager {
         @Override
         public void onLyricResult(String requestId, long songCode, String lyricUrl, int errorCode) {
             mLogger.d("onLyricResult " + requestId + "," + lyricUrl + ",errorCode=" + errorCode);
-            mMainThreadDispatch.onLyricResult(requestId, songCode,lyricUrl);
+            mMainThreadDispatch.onLyricResult(requestId, songCode, lyricUrl);
         }
 
         @Override
@@ -329,10 +329,22 @@ public final class RtcManager {
     }
 
     public void destroyMcc() {
-        mMcc.unregisterEventHandler();
+        if (null != mMcc) {
+            mMcc.unregisterEventHandler();
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (null != mMcc) {
+                    mMcc.getCaches();
+                }
+            }
+        }).start();
         IAgoraMusicContentCenter.destroy();
-        mAgoraMusicPlayer.destroy();
-        mAgoraMusicPlayer = null;
+        if (null != mAgoraMusicPlayer) {
+            mAgoraMusicPlayer.destroy();
+            mAgoraMusicPlayer = null;
+        }
         mMcc = null;
         mConfig.eventHandler = null;
         mConfig = null;

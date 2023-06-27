@@ -142,9 +142,15 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicPositionChanged(long position) {
-            mDataBinding.lrcControlView.getLrcView().updateTime(position);
-            mDataBinding.lrcControlView.getPitchView().updateTime(position);
-            mDataBinding.lrcControlView.getSongSlider().setProgress(position);
+            try {
+                if (mMusicPlayer.isPlaying()) {
+                    mDataBinding.lrcControlView.getLrcView().updateTime(position);
+                    mDataBinding.lrcControlView.getPitchView().updateTime(position);
+                    mDataBinding.lrcControlView.getSongSlider().setProgress(position);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -180,7 +186,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
         @Override
         public void onMusicChanged(@NonNull MemberMusicModel music) {
-           // long newSongCode = mMusicPlayer.getInternalSongCode(6625526662555910L, "{\"format\":{\"highPart\":0}}");
+            // long newSongCode = mMusicPlayer.getInternalSongCode(6625526662555910L, "{\"format\":{\"highPart\":0}}");
             //music.setMusicId(String.valueOf(newSongCode));
             //music.setJsonOption("{\"format\":{\"highPart\":0}}");
             //mMusicPlayer.getSongSimpleInfo(newSongCode);
@@ -316,6 +322,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             @Override
             public void onProgressChanged(long time) {
                 mMusicPlayer.seek(time);
+                mDataBinding.lrcControlView.getSongSlider().setProgress(time);
+                mDataBinding.lrcControlView.getPitchView().updateTime(time);
             }
 
             @Override
@@ -367,6 +375,8 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             public void onRangeChanged(RangeSeekBar view, float leftValue, float rightValue, boolean isFromUser) {
                 if (isFromUser) {
                     mMusicPlayer.seek((long) leftValue);
+                    mDataBinding.lrcControlView.getLrcView().updateTime((long) leftValue);
+                    mDataBinding.lrcControlView.getPitchView().updateTime((long) leftValue);
                 }
             }
 
