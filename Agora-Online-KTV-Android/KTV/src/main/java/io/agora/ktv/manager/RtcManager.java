@@ -1,30 +1,32 @@
 package io.agora.ktv.manager;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.ObjectsCompat;
 
-import com.agora.data.provider.ExampleData;
 import com.agora.data.manager.UserManager;
 import com.agora.data.model.AgoraMember;
 import com.agora.data.model.AgoraMusicCharts;
 import com.agora.data.model.AgoraRoom;
 import com.agora.data.model.MusicModel;
 import com.agora.data.model.User;
+import com.agora.data.provider.ExampleData;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +39,13 @@ import io.agora.musiccontentcenter.IMusicContentCenterEventHandler;
 import io.agora.musiccontentcenter.Music;
 import io.agora.musiccontentcenter.MusicChartInfo;
 import io.agora.musiccontentcenter.MusicContentCenterConfiguration;
+import io.agora.rtc2.ChannelMediaOptions;
 import io.agora.rtc2.Constants;
+import io.agora.rtc2.IAudioFrameObserver;
 import io.agora.rtc2.IRtcEngineEventHandler;
 import io.agora.rtc2.RtcEngine;
 import io.agora.rtc2.RtcEngineConfig;
+import io.agora.rtc2.audio.AudioParams;
 import io.agora.rtm.RtmTokenBuilder;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -79,6 +84,12 @@ public final class RtcManager {
     private List<Double> voicePitchList = new ArrayList<>();
 
     private ConnectivityManager mConnMgr;
+    private IdentifyProtocolV1 mIdentifyProtocolV1;
+    //12s byte
+    private ByteQueue mByteQueue = new ByteQueue(1280 * 25 * 12);
+    private int mRecordAudioFrameIndex = 0;
+
+    private Activity mActivity;
 
     /**
      * 唱歌人的UserId
@@ -254,11 +265,12 @@ public final class RtcManager {
 
     private RtcManager(Context mContext) {
         this.mContext = mContext;
-
+        mIdentifyProtocolV1 = new IdentifyProtocolV1();
         mConnMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         initData();
         iniRTC();
+
         //initMcc();
         register();
     }
@@ -278,7 +290,7 @@ public final class RtcManager {
         }
     }
 
-    private void iniRTC() {
+    public void iniRTC() {
         RtcEngineConfig config = new RtcEngineConfig();
         config.mContext = mContext;
         config.mAppId = BuildConfig.APP_ID;
@@ -287,11 +299,89 @@ public final class RtcManager {
         try {
             mRtcEngine = RtcEngine.create(config);
             mRtcEngine.setChannelProfile(Constants.CHANNEL_PROFILE_LIVE_BROADCASTING);
-
+            registerAudioFrame();
             mLoggerRTC.i("SDK version:" + RtcEngine.getSdkVersion());
+
+            updateRoleSpeak(false);
         } catch (Exception e) {
             e.printStackTrace();
             mLoggerRTC.e("init error", e);
+        }
+    }
+
+    private void registerAudioFrame() {
+        mRtcEngine.registerAudioFrameObserver(new IAudioFrameObserver() {
+            @Override
+            public boolean onPlaybackAudioFrameBeforeMixing(String channelId, int uid, int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
+                return false;
+            }
+
+            @Override
+            public boolean onRecordAudioFrame(String channelId, int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
+                int length = buffer.remaining();
+                byte[] origin = new byte[length];
+                buffer.get(origin);
+                buffer.flip();
+
+                for (byte b : origin) {
+                    mByteQueue.enqueue(b);
+                }
+
+                mRecordAudioFrameIndex++;
+                if (mRecordAudioFrameIndex % 75 == 0) {
+                    mRecordAudioFrameIndex = 0;
+                    if (null != mMusicModel) {
+                        mIdentifyProtocolV1.reg(mActivity, mByteQueue.getAllData(), mMusicModel.getName());
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onPlaybackAudioFrame(String channelId, int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
+                return false;
+            }
+
+            @Override
+            public boolean onMixedAudioFrame(String channelId, int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
+                return false;
+            }
+
+            @Override
+            public boolean onEarMonitoringAudioFrame(int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
+                return false;
+            }
+
+            @Override
+            public int getObservedAudioFramePosition() {
+                return 0;
+            }
+
+            @Override
+            public AudioParams getRecordAudioParams() {
+                return null;
+            }
+
+            @Override
+            public AudioParams getPlaybackAudioParams() {
+                return null;
+            }
+
+            @Override
+            public AudioParams getMixedAudioParams() {
+                return null;
+            }
+
+            @Override
+            public AudioParams getEarMonitoringAudioParams() {
+                return null;
+            }
+        });
+    }
+
+    public void setRecordingAudioFrameParameters(int sampleRate, int channel, int mode, int samplesPerCall) {
+        if (null != mRtcEngine) {
+            mRtcEngine.setRecordingAudioFrameParameters(sampleRate, channel, mode, samplesPerCall);
         }
     }
 
@@ -302,7 +392,7 @@ public final class RtcManager {
         }
 
         try {
-            int ret = getRtcEngine().loadExtensionProvider("agora_drm_loader_extension");
+            Log.i("test", "MusicContentCenter initMcc create:");
             mMcc = IAgoraMusicContentCenter.create(getRtcEngine());
 
             //just for test
@@ -318,6 +408,7 @@ public final class RtcManager {
             mConfig.mccUid = mccUid;
             mConfig.token = rtmToken;
             mConfig.eventHandler = mIMccEventHandler;
+            Log.i("test", "MusicContentCenter initMcc initialize:");
             mMcc.initialize(mConfig);
 
             mAgoraMusicPlayer = mMcc.createMusicPlayer();
@@ -332,14 +423,6 @@ public final class RtcManager {
         if (null != mMcc) {
             mMcc.unregisterEventHandler();
         }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (null != mMcc) {
-                    mMcc.getCaches();
-                }
-            }
-        }).start();
         IAgoraMusicContentCenter.destroy();
         if (null != mAgoraMusicPlayer) {
             mAgoraMusicPlayer.destroy();
@@ -348,6 +431,12 @@ public final class RtcManager {
         mMcc = null;
         mConfig.eventHandler = null;
         mConfig = null;
+    }
+
+    public void destoryRtc() {
+        if (null != mRtcEngine) {
+            mRtcEngine.destroy();
+        }
     }
 
     public RtcEngine getRtcEngine() {
@@ -371,6 +460,7 @@ public final class RtcManager {
         }
         return instance;
     }
+
 
     public boolean isOwner() {
         return ObjectsCompat.equals(getOwner(), getMine());
@@ -493,7 +583,18 @@ public final class RtcManager {
 
             mLoggerRTC.i("joinRTC() called with: results = [%s]", mRoom);
 
-            int ret = getRtcEngine().joinChannel(BuildConfig.RTC_TOKEN, mRoom.getChannelName(), null, Integer.parseInt(mMine.getId()));
+            setRecordingAudioFrameParameters(16000, 1, io.agora.rtc2.Constants.RAW_AUDIO_FRAME_OP_MODE_READ_ONLY, 640);
+
+            int ret = getRtcEngine().joinChannel(
+                    BuildConfig.RTC_TOKEN, mRoom.getChannelName(), Integer.parseInt(mMine.getId()),
+                    new ChannelMediaOptions() {{
+                        publishMicrophoneTrack = false;
+                        publishCustomAudioTrack = false;
+                        autoSubscribeAudio = true;
+
+                    }});
+
+            //int ret = getRtcEngine().joinChannel(BuildConfig.RTC_TOKEN, mRoom.getChannelName(), null, Integer.parseInt(mMine.getId()));
             if (ret != Constants.ERR_OK) {
                 mLoggerRTC.e("joinRTC() called error " + ret);
                 emitter.onError(new Exception("join rtc room error " + ret));
@@ -531,6 +632,21 @@ public final class RtcManager {
     public void resetVoicePitchList() {
         voicePitchList.clear();
     }
+
+    public boolean updateRoleSpeak(boolean isSpeak) {
+        int ret = io.agora.rtc2.Constants.ERR_OK;
+        ret += mRtcEngine.updateChannelMediaOptions(new ChannelMediaOptions() {{
+            publishMicrophoneTrack = isSpeak;
+            publishCustomAudioTrack = isSpeak;
+        }});
+        return ret == io.agora.rtc2.Constants.ERR_OK;
+    }
+
+
+    public void setActivity(Activity activity) {
+        mActivity = activity;
+    }
+
 
     private BroadcastReceiver mNetworkStateReceiver = new BroadcastReceiver() {
         @Override

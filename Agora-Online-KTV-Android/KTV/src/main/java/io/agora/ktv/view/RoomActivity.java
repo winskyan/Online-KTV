@@ -1,6 +1,5 @@
 package io.agora.ktv.view;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -14,18 +13,17 @@ import androidx.annotation.Nullable;
 import androidx.core.util.ObjectsCompat;
 import androidx.fragment.app.Fragment;
 
-import com.agora.data.provider.ExampleData;
 import com.agora.data.manager.UserManager;
 import com.agora.data.model.AgoraMember;
 import com.agora.data.model.AgoraRoom;
 import com.agora.data.model.User;
+import com.agora.data.provider.ExampleData;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
-import com.google.android.material.slider.Slider;
 import com.jaygoo.widget.OnRangeChangedListener;
 import com.jaygoo.widget.RangeSeekBar;
 
@@ -34,13 +32,11 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import io.agora.baselibrary.base.DataBindBaseActivity;
 import io.agora.baselibrary.base.DataBindBaseDialog;
 import io.agora.baselibrary.base.OnItemClickListener;
-import io.agora.baselibrary.util.FileUtils;
 import io.agora.baselibrary.util.ToastUtils;
 import io.agora.ktv.R;
 import io.agora.ktv.adapter.RoomSpeakerAdapter;
@@ -92,6 +88,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             LrcData data = LrcLoadUtils.parse(lrcFile);
             mDataBinding.lrcControlView.getLrcView().setLrcData(data);
             mDataBinding.lrcControlView.getPitchView().setLrcData(data);
+            RtcManager.Instance(RoomActivity.this).updateRoleSpeak(true);
         }
 
         @Override
@@ -401,6 +398,28 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
 
     @Override
     protected void iniData() {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                for (int i = 0; i < 1000; i++) {
+//                    Log.i(TAG_ROOM, "MusicContentCenter :" + i);
+//                    Log.i(TAG_ROOM, "MusicContentCenter inirtc:");
+//                    RtcManager.Instance(getApplicationContext()).iniRTC();
+//                    Log.i(TAG_ROOM, "MusicContentCenter initMcc:");
+//                    RtcManager.Instance(getApplicationContext()).initMcc();
+//                    Log.i(TAG_ROOM, "MusicContentCenter destroyMcc:");
+//                    RtcManager.Instance(getApplicationContext()).destroyMcc();
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Log.i(TAG_ROOM, "MusicContentCenter destoryRtc:");
+//                            RtcManager.Instance(getApplicationContext()).destoryRtc();
+//                            Log.i(TAG_ROOM, "MusicContentCenter destoryRtc finish");
+//                        }
+//                    }).start();
+//                }
+//            }
+//        }).start();
         RtcManager.Instance(getApplicationContext()).initMcc();
         User mUser = UserManager.Instance().getUserLiveData().getValue();
         if (mUser == null) {
@@ -770,6 +789,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
     }
 
     private void requestSeatOn() {
+        RtcManager.Instance(this).setActivity(this);
         AgoraMember mMine = RtcManager.Instance(this).getMine();
         if (mMine == null) {
             return;
