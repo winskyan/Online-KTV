@@ -187,7 +187,7 @@ public class RoomActivity extends DataBindBaseActivity<KtvActivityRoomBinding> i
             //music.setMusicId(String.valueOf(newSongCode));
             //music.setJsonOption("{\"format\":{\"highPart\":0}}");
             //mMusicPlayer.getSongSimpleInfo(newSongCode);
-
+            music.setMusicId("6843909953098030");
             mMusicQueue.offer(music);
             mLogger.i("music select queue size=" + mMusicQueue.size() + ",songs=" + mMusicQueue);
 

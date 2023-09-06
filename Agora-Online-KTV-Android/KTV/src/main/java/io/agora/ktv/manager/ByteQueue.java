@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class ByteQueue {
-    private Queue<Byte> queue;
-    private int maxSize;
+    private final Queue<Byte> queue;
+    private final int maxSize;
 
     public ByteQueue(int maxSize) {
         this.queue = new ArrayDeque<>();

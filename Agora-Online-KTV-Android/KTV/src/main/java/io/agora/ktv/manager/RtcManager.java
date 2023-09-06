@@ -317,6 +317,11 @@ public final class RtcManager {
             }
 
             @Override
+            public boolean onPublishAudioFrame(String channelId, int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
+                return false;
+            }
+
+            @Override
             public boolean onRecordAudioFrame(String channelId, int type, int samplesPerChannel, int bytesPerSample, int channels, int samplesPerSec, ByteBuffer buffer, long renderTimeMs, int avsync_type) {
                 int length = buffer.remaining();
                 byte[] origin = new byte[length];
@@ -374,6 +379,11 @@ public final class RtcManager {
 
             @Override
             public AudioParams getEarMonitoringAudioParams() {
+                return null;
+            }
+
+            @Override
+            public AudioParams getPublishAudioParams() {
                 return null;
             }
         });
