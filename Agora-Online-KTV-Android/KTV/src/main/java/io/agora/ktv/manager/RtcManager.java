@@ -5,20 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.ObjectsCompat;
 
-import com.agora.data.provider.ExampleData;
 import com.agora.data.manager.UserManager;
 import com.agora.data.model.AgoraMember;
 import com.agora.data.model.AgoraMusicCharts;
 import com.agora.data.model.AgoraRoom;
 import com.agora.data.model.MusicModel;
 import com.agora.data.model.User;
+import com.agora.data.provider.ExampleData;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 
