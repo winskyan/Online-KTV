@@ -25,6 +25,7 @@ import java.util.Map;
 import io.agora.ktv.bean.MemberMusicModel;
 import io.agora.mediaplayer.IMediaPlayerObserver;
 import io.agora.mediaplayer.data.CacheStatistics;
+import io.agora.mediaplayer.data.PlayerPlaybackStats;
 import io.agora.mediaplayer.data.PlayerUpdatedInfo;
 import io.agora.mediaplayer.data.SrcInfo;
 import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
@@ -107,9 +108,10 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         }
 
         @Override
-        public void onPositionChanged(long position_ms) {
+        public void onPositionChanged(long positionMs, long timestampMs) {
 
         }
+
 
         @Override
         public void onPlayerEvent(io.agora.mediaplayer.Constants.MediaPlayerEvent eventCode, long elapsedTime, String message) {
@@ -142,6 +144,16 @@ public class MusicPlayer extends IRtcEngineEventHandler {
 
         @Override
         public void onPlayerInfoUpdated(PlayerUpdatedInfo info) {
+
+        }
+
+        @Override
+        public void onPlayerCacheStats(CacheStatistics stats) {
+
+        }
+
+        @Override
+        public void onPlayerPlaybackStats(PlayerPlaybackStats stats) {
 
         }
 

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,12 +25,19 @@ import com.elvishew.xlog.XLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.agora.baselibrary.util.ToastUtils;
 import io.agora.ktv.BuildConfig;
 import io.agora.ktv.bean.MemberMusicModel;
+import io.agora.mediaplayer.IMediaPlayer;
+import io.agora.mediaplayer.IMediaPlayerCustomDataProvider;
+import io.agora.mediaplayer.data.MediaPlayerSource;
 import io.agora.musiccontentcenter.IAgoraMusicContentCenter;
 import io.agora.musiccontentcenter.IAgoraMusicPlayer;
 import io.agora.musiccontentcenter.IMusicContentCenterEventHandler;
@@ -78,6 +86,7 @@ public final class RtcManager {
     private List<Double> voicePitchList = new ArrayList<>();
 
     private ConnectivityManager mConnMgr;
+    private IMediaPlayer mMediaPlayer;
 
     /**
      * 唱歌人的UserId
@@ -288,10 +297,199 @@ public final class RtcManager {
             mRtcEngine.setChannelProfile(Constants.CHANNEL_PROFILE_LIVE_BROADCASTING);
 
             mLoggerRTC.i("SDK version:" + RtcEngine.getSdkVersion());
+
+            testMpk();
         } catch (Exception e) {
             e.printStackTrace();
             mLoggerRTC.e("init error", e);
         }
+    }
+
+    private class MediaPlayerCustomDataProvider implements IMediaPlayerCustomDataProvider {
+        private String TAG = MediaPlayerCustomDataProvider.class.getSimpleName();
+
+        private static final int SEEK_SET = 0; // The file offset is set to offset bytes.
+        private static final int SEEK_CUR =
+                1; // The file offset is set to its current location plus offset bytes.
+        private static final int SEEK_END =
+                2; // file offset is set to the size of the file plus offset bytes.
+
+        private RandomAccessFile fileInput = null;
+        private String url;
+        private long offset = 0;
+        private long fileLength = 0;
+
+        public MediaPlayerCustomDataProvider(String url) {
+            try {
+                fileInput = new RandomAccessFile(url, "r");
+                fileLength = fileInput.length();
+                this.url = url;
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public int onReadData(ByteBuffer byteBuffer, int size) {
+            if (fileInput == null) {
+                return -1;
+            }
+            int readSize = 0;
+            byte[] buffer = new byte[size];
+            try {
+                readSize = fileInput.read(buffer);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return -1;
+            }
+            if (readSize > 0) {
+                Log.d(TAG, "MusicPlayer read size: " + readSize);
+                byteBuffer.put(buffer, 0, readSize);
+                byteBuffer.flip();
+                offset += readSize;
+            }
+            return readSize;
+        }
+
+        @Override
+        public long onSeek(long offset, int whence) {
+            if (fileInput == null) {
+                return -1;
+            }
+            Log.d(TAG, "MusicPlayer whence: " + whence + ", offset: " + offset);
+            try {
+                if (whence == SEEK_SET) {
+                    this.offset = offset;
+                } else if (whence == SEEK_CUR) {
+                    this.offset += offset;
+                } else if (whence == SEEK_END) {
+                    this.offset = fileLength;
+                } else if (whence == 65536) {
+                    return fileLength;
+                }
+                fileInput.seek(this.offset);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return -1;
+            }
+            return 0;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void close() {
+            if (fileInput == null) {
+                return;
+            }
+            try {
+                fileInput.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void testMpk() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mMediaPlayer = mRtcEngine.createMediaPlayer();
+                String path = mContext.getExternalCacheDir() + "/15songs.mp4";
+                mLogger.i("MusicPlayer path:" + path);
+//                MediaPlayerCustomDataProvider mediaPlayerCustomDataProvider = new MediaPlayerCustomDataProvider(path);
+//                MediaPlayerSource mediaPlayerSource = new MediaPlayerSource();
+//                mediaPlayerSource.setProvider(mediaPlayerCustomDataProvider);
+//                mediaPlayerSource.setStartPos(0);
+//                mediaPlayerSource.setAutoPlay(true);
+//                IMediaPlayerCustomDataProvider provider = mediaPlayerSource.getProvider();
+//                mLogger.i("MusicPlayer getProvider:" + provider);
+//                int ret = mMediaPlayer.openWithMediaSource(mediaPlayerSource);
+//                mLogger.i("MusicPlayer openWithMediaSource:" + ret);
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                //mMediaPlayer.stop();
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                mediaPlayerCustomDataProvider.close();
+
+//                mediaPlayerCustomDataProvider = new MediaPlayerCustomDataProvider("/sdcard/Download/sample.mkv");
+//                mediaPlayerSource.setStartPos(0);
+//                mediaPlayerSource.setAutoPlay(false);
+//                mediaPlayerSource.setProvider(mediaPlayerCustomDataProvider);
+//                ret = mMediaPlayer.openWithMediaSource(mediaPlayerSource);
+//                mLogger.i("MusicPlayer openWithMediaSource:" + ret);
+//
+//                mediaPlayerCustomDataProvider.close();
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                mMediaPlayer.stop();
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//
+                MediaPlayerSource source = new MediaPlayerSource();
+                source.setAutoPlay(true);
+                source.enableAgoraSource(true);
+                source.enableLiveSource(false);
+                source.setUrl("http://114.236.93.153:8080/download/video/15songs.mp4");
+                int ret = mMediaPlayer.openWithMediaSource(source);
+                mLogger.i("MusicPlayer openWithMediaSource:" + ret);
+                boolean isAgoraSource = source.isAgoraSource();
+                mLogger.i("MusicPlayer isAgoraSource:" + isAgoraSource);
+                boolean isLiveSource = source.isLiveSource();
+                mLogger.i("MusicPlayer isLiveSource:" + isLiveSource);
+                boolean isAutoPlay = source.isAutoPlay();
+                mLogger.i("MusicPlayer isAutoPlay:" + isAutoPlay);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+//                mMediaPlayer.stop();
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                String uri = "android_ut";
+//                source.setUrl("http://114.236.93.153:8080/download/video/15songs.mp4");
+//                source.setStartPos(0);
+//                source.setUri(uri);
+//                source.setEnableCache(true);
+//                ret = (mMediaPlayer.openWithMediaSource(source));
+//                mLogger.i("MusicPlayer openWithMediaSource:" + ret);
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                mMediaPlayer.stop();
+//
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+
+                //mMediaPlayer.destroy();
+            }
+        }).start();
     }
 
     public void initMcc() {
