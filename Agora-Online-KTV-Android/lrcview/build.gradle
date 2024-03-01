@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion COMPILESDKVERSION
-    buildToolsVersion BUILDTOOLSVERSION
+    compileSdkVersion 31
 
     defaultConfig {
-        minSdkVersion MINSDKVERSION
-        targetSdkVersion TARGETSDKVERSION
-        versionCode 1
-        versionName "1.0.0"
+        minSdkVersion 17
+        targetSdkVersion 31
+        versionCode 9
+        versionName "1.0.15"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -28,7 +28,9 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.7.2'
+    implementation 'androidx.annotation:annotation:1.5.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+    implementation 'com.github.guohai:Leonids:a454159ed7'
 }
+
 

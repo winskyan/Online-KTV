@@ -340,11 +340,13 @@ public final class RtcManager {
                 }
             }
         }).start();
+
+//        if (null != mAgoraMusicPlayer) {
+//            mAgoraMusicPlayer.destroy();
+//            mAgoraMusicPlayer = null;
+//        }
+        mMcc.destroyMusicPlayer(mAgoraMusicPlayer);
         IAgoraMusicContentCenter.destroy();
-        if (null != mAgoraMusicPlayer) {
-            mAgoraMusicPlayer.destroy();
-            mAgoraMusicPlayer = null;
-        }
         mMcc = null;
         mConfig.eventHandler = null;
         mConfig = null;

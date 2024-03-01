@@ -625,7 +625,7 @@ public class MusicPlayer extends IRtcEngineEventHandler {
         RtcManager.Instance(mContext).resetVoicePitchList();
         checkOriginal();
         mAgoraMusicPlayer.play();
-
+        mAgoraMusicPlayer.setPlayMode(IAgoraMusicPlayer.MusicPlayMode.MUSIC_PLAY_MODE_LEAD_SING);
         mHandler.obtainMessage(ACTION_ON_MUSIC_OPENCOMPLETED, mAgoraMusicPlayer.getDuration()).sendToTarget();
     }
 
